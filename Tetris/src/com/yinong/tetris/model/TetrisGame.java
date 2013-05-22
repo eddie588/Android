@@ -2,7 +2,9 @@ package com.yinong.tetris.model;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Queue;
 import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import android.util.Log;
 
@@ -13,6 +15,8 @@ public class TetrisGame  {
 	private boolean running = true;
 	
 	ArrayList<TetrisGameListener> gameListeners = new ArrayList<TetrisGameListener>();
+	
+	private Queue<TetrisCommand> commandQueue;
 	
 	int score=0;
 	int highScore=0;
@@ -40,6 +44,7 @@ public class TetrisGame  {
 		activeBlock = new BlockT();
 		activeBlock.setX(4);
 		activeBlock.setY(0);	
+		commandQueue = new ConcurrentLinkedQueue<TetrisCommand>();
 		resetGame();
 	}
 	
@@ -53,8 +58,12 @@ public class TetrisGame  {
 		return running;
 	}
 	
+	public void addCommand(TetrisCommand command) {
+		commandQueue.add(command);
+	}
+	
 
-	public synchronized int getScore() {
+	public int getScore() {
 		return score;
 	}
 
@@ -72,12 +81,12 @@ public class TetrisGame  {
 	}
 
 	
-	public synchronized boolean isGameOver() {
+	public boolean isGameOver() {
 		return gameOver;
 	}
 
 	
-	public synchronized Block getActiveBlock() {
+	public Block getActiveBlock() {
 		return activeBlock;
 	}
 	
@@ -86,7 +95,7 @@ public class TetrisGame  {
 	}
 
 	
-	public synchronized void resetGame() {
+	public void resetGame() {
 		if( score > highScore)
 		Log.d("Tetris","Game started");
 		activeBlock = createNewBlock();
@@ -99,10 +108,11 @@ public class TetrisGame  {
 			}
 		}		
 		deletedBlocks.clear();
+		
 	}
 
 	
-	public synchronized ArrayList<BlockDot> getBlocks() {
+	public ArrayList<BlockDot> getBlocks() {
 		ArrayList<BlockDot> blocks = new ArrayList<BlockDot>();
 		
 		for(int y=0;y<ROWS;y++) {
@@ -121,7 +131,7 @@ public class TetrisGame  {
 	}
 
 	
-	public synchronized void move(int direction) {
+	void move(int direction) {
 		Log.d("Tetris","Move " + direction);
 		if( canMove(activeBlock,direction) ) {
 			activeBlock.move(direction);
@@ -129,7 +139,7 @@ public class TetrisGame  {
 	}
 
 	
-	public synchronized void update() {
+	public void update() {
 		long now = System.currentTimeMillis();
 		if( !running )
 			return;
@@ -141,7 +151,10 @@ public class TetrisGame  {
 		updateOtherBlocks(now);
 		if( callout != null )
 			callout.update(now);
+		updateCommands();
 	}
+	
+	
 	
 	private long lastUpdateActive=0;
 	private void updateActiveBlock(long now) {
@@ -183,6 +196,28 @@ public class TetrisGame  {
 		}
 	}
 	
+	private void updateCommands() {
+		while ( !commandQueue.isEmpty() ) {
+			TetrisCommand command = commandQueue.remove();
+			
+			if( command.getCommand() == TetrisCommand.MOVE_LEFT ) {
+				move(Block.LEFT);
+			}
+			else if( command.getCommand() == TetrisCommand.MOVE_RIGHT) {
+				move(Block.RIGHT);
+			}
+			else if( command.getCommand() == TetrisCommand.ROTATE_RIGHT ) {
+				move(Block.ROTATE_RIGHT);
+			}
+			else if ( command.getCommand() == TetrisCommand.DROP ) {
+				drop();
+			}
+			else if ( command.getCommand() == TetrisCommand.RESTART ) {
+				resetGame();
+			}			
+		}
+	}
+	
 	public String getErrorString() {
 		return error;
 	}
@@ -191,7 +226,7 @@ public class TetrisGame  {
 	 * Move the active block all the way to the bottom. 
 	 */
 	
-	public synchronized void drop() {
+	void drop() {
 		int addScore = 0;
 		while(canMove(activeBlock,Block.DOWN)) {
 			activeBlock.move(Block.DOWN);
@@ -203,7 +238,7 @@ public class TetrisGame  {
 		blockLanded();
 	}
 	
-	synchronized void  blockLanded() {
+	void  blockLanded() {
 		int[] spaces = activeBlock.getSpacesUsed();
 		// break active block into pieces
 		
@@ -323,19 +358,19 @@ public class TetrisGame  {
 	 * @return return true is is space is used, and false if the space is not used
 	 */
 			
-	synchronized boolean isSpaceUsed(int x,int y) {
+	boolean isSpaceUsed(int x,int y) {
 		return getBlockAt(x,y) !=null;
 	}
 
 	
-	public synchronized BlockDot getBlockAt(int x,int y) {
+	public BlockDot getBlockAt(int x,int y) {
 		if( x < 0 || x >= getColumns() || y<0 || y >= getRows() )
 			return null;
 		return blockArray[x][y];
 	}
 	
 	
-	public synchronized void setBlockAt(int x,int y,BlockDot block) {
+	public void setBlockAt(int x,int y,BlockDot block) {
 		if( x < 0 || x >= getColumns() || y<0 || y >= getRows() )
 			return;
 		blockArray[x][y] = block;
@@ -434,13 +469,13 @@ public class TetrisGame  {
 	}
 
 	
-	public synchronized void pause() {
+	public void pause() {
 		// TODO Auto-generated method stub
 		running = false;
 	}
 	
 	
-	public synchronized void resume() {
+	public void resume() {
 		running = true;
 	}
 }

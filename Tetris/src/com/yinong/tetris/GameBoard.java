@@ -14,6 +14,7 @@ import android.view.SurfaceView;
 import android.view.View;
 
 import com.yinong.tetris.model.Block;
+import com.yinong.tetris.model.TetrisCommand;
 import com.yinong.tetris.model.TetrisGame;
 import com.yinong.tetris.view.TetrisRenderer;
 
@@ -121,13 +122,6 @@ public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
 	}
 	
 
-	/**
-	 * Drop active block
-	 */
-
-	public void drop() {
-		game.drop();
-	}
 
 	@Override
 	public boolean onDown(MotionEvent event) {
@@ -139,13 +133,13 @@ public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
 	public boolean onFling(MotionEvent startEvent, MotionEvent endEvent, float xVelocity,
 			float yVelocity) {
 		if(endEvent.getY() - startEvent.getY() > 50) {
-			game.drop();
+			game.addCommand(new TetrisCommand(TetrisCommand.DROP));
 			return true;
 		} else if (endEvent.getX() - startEvent.getX() > 50) {
-			game.move(Block.RIGHT);
+			game.addCommand(new TetrisCommand(TetrisCommand.MOVE_RIGHT));
 		}
 		else if (endEvent.getX() - startEvent.getX() < -50) {
-			game.move(Block.LEFT);
+			game.addCommand(new TetrisCommand(TetrisCommand.MOVE_LEFT));
 		}
 			
 		return true;
@@ -183,13 +177,13 @@ public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
 			return true;
 		} else {
 			if( event.getX() < getWidth()*0.1) {
-				game.move(Block.LEFT);
+				game.addCommand(new TetrisCommand(TetrisCommand.MOVE_LEFT));
 			} 
 			else if (event.getX() > getWidth()*0.9) {
-				game.move(Block.RIGHT);
+				game.addCommand(new TetrisCommand(TetrisCommand.MOVE_RIGHT));
 			}
 			else  {
-				game.move(Block.ROTATE_RIGHT);
+				game.addCommand(new TetrisCommand(TetrisCommand.ROTATE_RIGHT));
 			}
 		}
 		return true;
