@@ -1,6 +1,7 @@
 package com.yinong.tetris.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.Random;
@@ -22,7 +23,7 @@ public class TetrisGame  {
 	int highScore=0;
 
 	
-	private BlockDot[][] blockArray= new BlockDot[COLUMNS][ROWS];
+	private HashMap<String,BlockDot> allBlocks = new HashMap<String,BlockDot> ();
 	
 	private String error ="";
 	
@@ -102,11 +103,7 @@ public class TetrisGame  {
 		nextBlock = createNewBlock();
 		gameOver = false;
 		score = 0;
-		for(int i=0;i<COLUMNS;i++) {
-			for(int j=0;j<ROWS;j++) {
-				setBlockAt(i,j,null);
-			}
-		}		
+		allBlocks.clear();
 		deletedBlocks.clear();
 		
 	}
@@ -371,14 +368,16 @@ public class TetrisGame  {
 	public BlockDot getBlockAt(int x,int y) {
 		if( x < 0 || x >= getColumns() || y<0 || y >= getRows() )
 			return null;
-		return blockArray[x][y];
+		String key = String.valueOf(x) + "_" + String.valueOf(y);
+		return allBlocks.get(key);
 	}
 	
 	
 	public void setBlockAt(int x,int y,BlockDot block) {
 		if( x < 0 || x >= getColumns() || y<0 || y >= getRows() )
 			return;
-		blockArray[x][y] = block;
+		String key = String.valueOf(x) + "_" + String.valueOf(y);
+		allBlocks.put(key,block);
 	}
 		
 	/**
