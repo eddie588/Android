@@ -12,7 +12,7 @@ import com.yinong.tetris.model.TetrisGame;
 
 public class Simulation1 {
 	long lastSimulate=0;
-	static int PERIOD = 200;
+	static int PERIOD = 50;
 	TetrisGame game;
 	
 	Block currentBlock = null;
@@ -99,11 +99,15 @@ public class Simulation1 {
 			for(int x=0;x<game.getColumns();x++) {
 				for(int y=0;y<game.getRows();y++) {
 					int[] spaces = block.getSpaces(x,y,orientation);
-					if( !game.borderHit(spaces) && !game.blockHit(spaces)) {
-						NewPosition p = new NewPosition(game,x,y,orientation,spaces);
-						p.calculateCost(block.getX(),block.getY());
-						newPositions.add(p);
+					if( game.borderHit(spaces) ) {
+						continue;
 					}
+					if( game.blockHit(spaces)) {
+						break;
+					}
+					NewPosition p = new NewPosition(game, x, y, orientation,spaces);
+					p.calculateCost(block.getX(), block.getY());
+					newPositions.add(p);
 				}
 			}
 		}
@@ -139,8 +143,7 @@ public class Simulation1 {
 		int y;
 		int orientation;
 		int[] spaces;
-		float costY=100f;
-		float costX=100f;
+		float benefit=0;
 		TetrisGame game;
 		int totalEmpty=0;
 		
@@ -152,23 +155,75 @@ public class Simulation1 {
 			this.game = game;
 		}
 		
+		
+		private  float clearBenefits[] = {0f,1f,3f,6f};
 		public void calculateCost(int startX,int startY) {
 		       Random r = new Random();
+		              
+		       benefit = clearBenefits[getClearedRows()];
 
-	            costY = ((float)(game.getRows()-getAverageY()))/game.getRows();
+		       //	penalties for higher average Y
+	           benefit -= ((float)(game.getRows()-getAverageY()))/game.getRows();
+	           
+//	           //	penalties for holes
+//	           benefit -= 0.5*getHolesBelowMe();
 
-	            if( x < game.getColumns()/2 )
-	              costX = ((float)(getAverageX()))/game.getColumns();
-	            else
-	              costX = (game.getColumns()-(float)(getAverageX()))/game.getColumns();
+	           //	penalties for holes
+	           benefit -= 10*getAllHoles()/((game.getRows()-y)*game.getColumns());
 
-	            //cost += r.nextFloat()/300;
-	            //System.out.println("x: " + x + " y: " + y + " avgY: " + getAverageY() + " cost: " + costX);
-//	            for(int col=0;col<game.getColumns();col++) {
-//	            	for(int row=y;row<game.getRows();row++) {
-//	            		totalEmpty += 
-//	            	}
-//	            }
+	           //	penalties for put block in center
+	           if( x < game.getColumns()/2 )
+	            	benefit -= 0.2*((float)(getAverageX()))/game.getColumns();
+	           else
+	            	benefit -= 0.2*(game.getColumns()-(float)(getAverageX()))/game.getColumns();
+
+		}
+		
+		public boolean usesSpace(int col,int row) {
+			for(int i=0;i<spaces.length;i+=2) {
+				if( col == spaces[i] && row == spaces[i+1])
+					return true;
+			}
+			return false;
+		}
+		
+		public int getHolesBelowMe() {
+			int holes = 0;
+			for(int i=0;i<spaces.length;i+=2) {
+				for(int r=spaces[i+1];r<game.getRows();r++) {
+					if( !game.isSpaceUsed(spaces[i], r))
+						holes++;
+				}
+			}
+			return holes;
+		}
+		
+		public int getAllHoles() {
+			int holes = 0;
+
+			for(int col=0;col<game.getColumns();col++) {
+				for(int row=y;row<game.getRows();row++) {
+					if( !game.isSpaceUsed(col, row))
+						holes++;
+				}
+			}
+			return holes;
+		}		
+		
+		public int getClearedRows() {
+			int clearRows = 0;
+			for(int row=0;row<game.getRows();row++) {
+				boolean cleared = true;
+				for(int col=0;col<game.getColumns();col++)	{
+					if( !game.isSpaceUsed(col,row) && !usesSpace(col,row)) {
+						cleared = false;
+						break;
+					}
+				}
+				if(cleared)
+					clearRows++;
+			}
+			return clearRows;
 		}
 		
 		public float getAverageY() {
@@ -187,18 +242,16 @@ public class Simulation1 {
 			return ax/(spaces.length/2);
 		}
 		
+		/**
+		 * Compare to positions and order by benefit descending order
+		 */
+		
 		@Override
 		public int compareTo(NewPosition another) {
-			if( costY > another.costY )
-				return 1;
-			else if( costY < another.costY )
+			if (benefit > another.benefit)
 				return -1;
-
-			if( costX > another.costX )
+			else if( benefit < another.benefit)
 				return 1;
-			else if( costX < another.costX )
-				return -1;
-			
 			return 0;
 		}
 		
