@@ -60,6 +60,7 @@ public class Simulation1 {
 		Block block = game.getActiveBlock();
 		if( block != currentBlock ) {
 			currentBlock = block;
+			commandQueue.clear();			
 			searchLowestFit(block);
 		} 
 		else {
