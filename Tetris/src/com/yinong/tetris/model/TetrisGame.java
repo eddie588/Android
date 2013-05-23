@@ -132,7 +132,7 @@ public class TetrisGame  {
 
 	
 	void move(int direction) {
-		Log.d("Tetris","Move " + direction);
+		//Log.d("Tetris","Move " + direction);
 		if( canMove(activeBlock,direction) ) {
 			activeBlock.move(direction);
 		}
@@ -265,8 +265,12 @@ public class TetrisGame  {
 		}		
 	}
 	
-	boolean isPositionOnBoard(int x,int y) {
+	public boolean isPositionOnBoard(int x,int y) {
 		return x>=0 && x< COLUMNS && y >=0 && y <ROWS;
+	}
+	
+	public boolean isPositionUsed(int x,int y) {
+		return getBlockAt(x,y) != null;
 	}
 	
 	/**
@@ -358,9 +362,10 @@ public class TetrisGame  {
 	 * @return return true is is space is used, and false if the space is not used
 	 */
 			
-	boolean isSpaceUsed(int x,int y) {
+	public boolean isSpaceUsed(int x,int y) {
 		return getBlockAt(x,y) !=null;
 	}
+
 
 	
 	public BlockDot getBlockAt(int x,int y) {
@@ -434,7 +439,7 @@ public class TetrisGame  {
 	 * @return
 	 */
 	
-	private boolean blockHit(int[] spaceNeeded) {
+	public boolean blockHit(int[] spaceNeeded) {
 		for (int s = 0; s < spaceNeeded.length; s += 2) {
 			if( isSpaceUsed(spaceNeeded[s],spaceNeeded[s+1]) )
 				return true;
@@ -448,7 +453,7 @@ public class TetrisGame  {
 	 * @return
 	 */
 	
-	private boolean borderHit(int[]spaceNeeded) {
+	public boolean borderHit(int[]spaceNeeded) {
 		for(int i=0;i<spaceNeeded.length;i+=2) {
 			// X
 			if(spaceNeeded[i] < 0 || spaceNeeded[i] >= COLUMNS )

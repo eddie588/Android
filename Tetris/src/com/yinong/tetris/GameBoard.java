@@ -13,9 +13,9 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 
-import com.yinong.tetris.model.Block;
 import com.yinong.tetris.model.TetrisCommand;
 import com.yinong.tetris.model.TetrisGame;
+import com.yinong.tetris.simulation.Simulation1;
 import com.yinong.tetris.view.TetrisRenderer;
 
 public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
@@ -25,6 +25,8 @@ public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
 	TetrisGame game = new TetrisGame();
 	TetrisRenderer gameRenderer=null;
 	GestureDetector gestureDetector;	
+	
+	Simulation1 simu;
 	
 	
 	
@@ -37,6 +39,7 @@ public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
 		gameRenderer = new TetrisRenderer(game,context);
 		SurfaceHolder holder = getHolder();
 
+		simu = new Simulation1(game);
 		holder.addCallback(this);
 	}
 
@@ -72,6 +75,7 @@ public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		// TODO Auto-generated method stub
 		gameLoop.setStop();
+		simu.stopSimulation();
 
 	}
 	

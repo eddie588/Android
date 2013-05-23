@@ -156,6 +156,18 @@ public abstract class Block  {
 		return space;
 	}	
 	
+	public int[] getSpaces(int x,int y,int orientation) {
+		// TODO Auto-generated method stub
+		int[] template = getSpacesTemplate(orientation);
+		int[] space = new int[template.length];
+		
+		for(int i=0;i<space.length;i+=2) {
+			space[i] = template[i] + x;
+			space[i+1] = template[i+1] + y;
+		}
+		return space;
+	}		
+	
 	public int getNumberOfPieces() {
 		return 4;
 	}
