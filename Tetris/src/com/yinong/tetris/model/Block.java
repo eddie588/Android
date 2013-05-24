@@ -123,7 +123,7 @@ public abstract class Block  {
 		
 		// move down add Y
 		if (direction == DOWN) {
-			for (int i = 1; i < spaces.length; i++) {
+			for (int i = 0; i < spaces.length; i++) {
 					spaces[i].y++;
 			}
 		}
