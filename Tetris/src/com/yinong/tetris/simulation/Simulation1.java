@@ -118,9 +118,10 @@ public class Simulation1 {
 		}
 		
 		try {
+			
 			NewPosition p = newPositions.first();
-            //System.out.println("x: " + p.x + " y: " + p.y + " avgY: " + p.getAverageY() + " cost: " + p.cost);
-			int rotates = p.orientation - block.getOrientation()>=0?p.orientation - block.getOrientation():
+
+            int rotates = p.orientation - block.getOrientation()>=0?p.orientation - block.getOrientation():
 				p.orientation - block.getOrientation()+4;
             
 			for(int i=0;i<rotates;i++) {
@@ -132,22 +133,46 @@ public class Simulation1 {
 				}
 			}
 			if( p.x < block.getX()) {
-				for(int i=block.getX();i>=p.x;i--) {
+				for(int i=block.getX();i>p.x;i--) {
 					commandQueue.add(new TetrisCommand(TetrisCommand.MOVE_LEFT));
 				}
 			}
 			commandQueue.add(new TetrisCommand(TetrisCommand.DROP));	
 			
+			printDebugInfo(newPositions);
+			
 
-			for(int i=0;i<20&& !newPositions.isEmpty() ;i++) {
-				NewPosition p1 = newPositions.first();
-	            System.out.println(p1.toString() + " benefit: " + p1.benefit);
-	            newPositions.remove(p1);
-			}
-		
 		} catch(Exception e) {
 			
 		}
+	}
+	
+	int pieces =0;
+	void printDebugInfo(SortedSet<NewPosition> newPositions) {
+		//	Debugging 
+		NewPosition first = newPositions.first();
+		System.out.println("" + (pieces++) + "/" + game.getScore() + "     |   " + first.toString() + " benefit: " + first.benefit);
+//		for(int i=0;i<game.getRows();i++) {
+//			NewPosition p1 = null;
+//			if( !newPositions.isEmpty() )
+//				p1 = newPositions.first();
+//			System.out.print("" + i%10 + " | ");
+//            for(int j=0;j<game.getColumns();j++) {
+//            	if( game.isSpaceUsed(j, i) )
+//            		System.out.print("*");
+//            	else if (helper.usesSpace(first.spaces, j, i))
+//            		System.out.print("o");
+//            	else 
+//            		System.out.print("-");
+//            }
+//
+//            if( p1 != null)
+//            	System.out.println("     |   " + p1.toString() + " benefit: " + p1.benefit);
+//            else
+//            	System.out.println("");
+//            newPositions.remove(p1);
+//		}	
+//		System.out.println("01234567890");
 	}
 	
 	class NewPosition implements Comparable<NewPosition>{
