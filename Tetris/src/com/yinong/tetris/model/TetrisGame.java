@@ -7,6 +7,7 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import android.graphics.Point;
 import android.util.Log;
 
 public class TetrisGame  {
@@ -236,13 +237,13 @@ public class TetrisGame  {
 	}
 	
 	void  blockLanded() {
-		int[] spaces = activeBlock.getSpacesUsed();
+		Point[] spaces = activeBlock.getSpacesUsed();
 		// break active block into pieces
 		
-		for(int i=0;i<spaces.length;i+=2) {
-			BlockDot block = new BlockDot(spaces[i],spaces[i+1],activeBlock.getColors()[i/2]);
-			if( isPositionOnBoard(spaces[i],spaces[i+1]) )
-				setBlockAt(spaces[i],spaces[i+1], block);
+		for(int i=0;i<spaces.length;i++) {
+			BlockDot block = new BlockDot(spaces[i].x,spaces[i].y,activeBlock.getColors()[i]);
+			if( isPositionOnBoard(spaces[i].x,spaces[i].y) )
+				setBlockAt(spaces[i].x,spaces[i].y, block);
 		}
 		clearCompletedCells();
 		activeBlock = nextBlock;
@@ -339,17 +340,7 @@ public class TetrisGame  {
 		return canClean;
 	}
 	
-	/**
-	 * Check if a block is visible
-	 */
-	boolean isBlockVisible(Block block) {
-		int[] spaces = block.getSpacesUsed();
-		for(int i=1;i<spaces.length;i+=2) {
-			if( spaces[i] < ROWS)
-				return true;
-		}
-		return false;
-	}
+
 	
 	
 	/**
@@ -407,7 +398,7 @@ public class TetrisGame  {
 			block = new BlockJ();
 			break;				
 		}
-		block.setX(1);
+		block.setX(6);
 		block.setY(0);
 		block.setOrientation(r.nextInt(4));	
 		return block;
@@ -420,7 +411,7 @@ public class TetrisGame  {
 	 */
 	
 	boolean canMove(Block block,int direction) {
-		int[] spaceNeeded = block.getSpaceNeeded(direction);
+		Point[] spaceNeeded = block.getSpaceNeeded(direction);
 		if( borderHit(spaceNeeded)) {
 			return false;
 		}
@@ -438,9 +429,9 @@ public class TetrisGame  {
 	 * @return
 	 */
 	
-	public boolean blockHit(int[] spaceNeeded) {
-		for (int s = 0; s < spaceNeeded.length; s += 2) {
-			if( isSpaceUsed(spaceNeeded[s],spaceNeeded[s+1]) )
+	public boolean blockHit(Point[] spaceNeeded) {
+		for (int s = 0; s < spaceNeeded.length; s++) {
+			if( isSpaceUsed(spaceNeeded[s].x,spaceNeeded[s].y) )
 				return true;
 		}
 		return false;
@@ -452,13 +443,13 @@ public class TetrisGame  {
 	 * @return
 	 */
 	
-	public boolean borderHit(int[]spaceNeeded) {
-		for(int i=0;i<spaceNeeded.length;i+=2) {
+	public boolean borderHit(Point[]spaceNeeded) {
+		for(int i=0;i<spaceNeeded.length;i++) {
 			// X
-			if(spaceNeeded[i] < 0 || spaceNeeded[i] >= COLUMNS )
+			if(spaceNeeded[i].x < 0 || spaceNeeded[i].x >= COLUMNS )
 				return true;
 			// Y
-			if(spaceNeeded[i+1] >= ROWS )
+			if(spaceNeeded[i].y >= ROWS )
 				return true;
 		}
 		return false;

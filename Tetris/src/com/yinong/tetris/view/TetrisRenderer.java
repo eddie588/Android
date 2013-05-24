@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Paint.FontMetrics;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
@@ -143,16 +144,16 @@ public class TetrisRenderer {
 	public void drawBlock(Block block,Canvas canvas, Paint paint, int offsetX, int offsetY,
 			int width, int height,float partial) {
 
-		int[] space = block.getSpacesUsed();
+		Point[] spaces = block.getSpacesUsed();
 		
 		paint.setColor(block.getColor());
 		
 		boolean moving = (block instanceof BlockDot) && ((BlockDot)block).getMoving()>0;
 		
-		for (int i = 0; i < space.length ; i += 2) {
-			if( space[i + 1] <game.getRows() || (space[i + 1] >= game.getRows() && moving)) {
-				int x = space[i];
-				int y = space[i+1];
+		for (int i = 0; i < spaces.length ; i++) {
+			if( spaces[i].y <game.getRows() || (spaces[i].y >= game.getRows() && moving)) {
+				int x = spaces[i].x;
+				int y = spaces[i].y;
 				
 				x = offsetX+x*width/game.getColumns();
 				y = offsetY+y*height/game.getRows();

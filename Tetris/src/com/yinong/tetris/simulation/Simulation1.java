@@ -6,6 +6,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import android.graphics.Point;
+
 import com.yinong.tetris.model.Block;
 import com.yinong.tetris.model.TetrisCommand;
 import com.yinong.tetris.model.TetrisGame;
@@ -19,9 +21,11 @@ public class Simulation1 {
 	Queue<TetrisCommand> commandQueue = new ConcurrentLinkedQueue<TetrisCommand>();
 	
 	boolean running = true;
+	SimulationHelper helper;
 	
 	public Simulation1(TetrisGame game) {
 		this.game = game;
+		helper = new SimulationHelper(game);
 		
 		Thread simuLoop = new Thread() {
 			
@@ -29,7 +33,7 @@ public class Simulation1 {
 				while(running) {
 					update();
 					try {
-						sleep(PERIOD);
+						sleep(20);
 					}
 					catch (Exception e) {
 						
@@ -98,7 +102,7 @@ public class Simulation1 {
 		for(int orientation=0;orientation<4;orientation++) {
 			for(int x=0;x<game.getColumns();x++) {
 				for(int y=0;y<game.getRows();y++) {
-					int[] spaces = block.getSpaces(x,y,orientation);
+					Point[] spaces = block.getSpaces(x,y,orientation);
 					if( game.borderHit(spaces) ) {
 						continue;
 					}
@@ -131,8 +135,9 @@ public class Simulation1 {
 					commandQueue.add(new TetrisCommand(TetrisCommand.MOVE_LEFT));
 				}
 			}
-
-			commandQueue.add(new TetrisCommand(TetrisCommand.DROP));			
+			commandQueue.add(new TetrisCommand(TetrisCommand.DROP));	
+			
+		
 		} catch(Exception e) {
 			
 		}
@@ -142,12 +147,12 @@ public class Simulation1 {
 		int x;
 		int y;
 		int orientation;
-		int[] spaces;
+		Point[] spaces;
 		float benefit=0;
 		TetrisGame game;
 		int totalEmpty=0;
 		
-		public NewPosition(TetrisGame game, int x,int y,int orientation,int[]spaces) {
+		public NewPosition(TetrisGame game, int x,int y,int orientation,Point[]spaces) {
 			this.x = x;
 			this.y = y;
 			this.spaces = spaces;
@@ -156,92 +161,30 @@ public class Simulation1 {
 		}
 		
 		
-		private  float clearBenefits[] = {0f,1f,3f,6f};
+		private  float clearBenefits[] = {0f,5f,15f,30f,60f};
 		public void calculateCost(int startX,int startY) {
-		       Random r = new Random();
-		              
-		       benefit = clearBenefits[getClearedRows()];
+		       benefit = clearBenefits[helper.getClearedRows(spaces)];
 
 		       //	penalties for higher average Y
-	           benefit -= ((float)(game.getRows()-getAverageY()))/game.getRows();
+	           benefit -= 5*((float)(game.getRows()-helper.getAverageY(spaces)))/game.getRows();
 	           
 //	           //	penalties for holes
 //	           benefit -= 0.5*getHolesBelowMe();
 
 	           //	penalties for holes
-	           benefit -= 10*getAllHoles()/((game.getRows()-y)*game.getColumns());
+	           benefit -= helper.getAllHolesBelowRow((int)helper.getAverageY(spaces))/5;
 
 	           //	penalties for put block in center
-	           if( x < game.getColumns()/2 )
-	            	benefit -= 0.2*((float)(getAverageX()))/game.getColumns();
-	           else
-	            	benefit -= 0.2*(game.getColumns()-(float)(getAverageX()))/game.getColumns();
+//	           if( x < game.getColumns()/2 )
+//	            	benefit -= 0.01*((float)(getAverageX()))/game.getColumns();
+//	           else
+//	            	benefit -= 0.01*(game.getColumns()-(float)(getAverageX()))/game.getColumns();
 
 		}
 		
-		public boolean usesSpace(int col,int row) {
-			for(int i=0;i<spaces.length;i+=2) {
-				if( col == spaces[i] && row == spaces[i+1])
-					return true;
-			}
-			return false;
-		}
-		
-		public int getHolesBelowMe() {
-			int holes = 0;
-			for(int i=0;i<spaces.length;i+=2) {
-				for(int r=spaces[i+1];r<game.getRows();r++) {
-					if( !game.isSpaceUsed(spaces[i], r))
-						holes++;
-				}
-			}
-			return holes;
-		}
-		
-		public int getAllHoles() {
-			int holes = 0;
 
-			for(int col=0;col<game.getColumns();col++) {
-				for(int row=y;row<game.getRows();row++) {
-					if( !game.isSpaceUsed(col, row))
-						holes++;
-				}
-			}
-			return holes;
-		}		
 		
-		public int getClearedRows() {
-			int clearRows = 0;
-			for(int row=0;row<game.getRows();row++) {
-				boolean cleared = true;
-				for(int col=0;col<game.getColumns();col++)	{
-					if( !game.isSpaceUsed(col,row) && !usesSpace(col,row)) {
-						cleared = false;
-						break;
-					}
-				}
-				if(cleared)
-					clearRows++;
-			}
-			return clearRows;
-		}
-		
-		public float getAverageY() {
-			float ay = 0 ;
-			for(int i=0;i<spaces.length;i+=2) {
-				ay += spaces[i+1];
-			} 
-			return ay/(spaces.length/2);
-		}
-		
-		public float getAverageX() {
-			float ax = 0 ;
-			for(int i=0;i<spaces.length;i+=2) {
-				ax += spaces[i];
-			} 
-			return ax/(spaces.length/2);
-		}
-		
+
 		/**
 		 * Compare to positions and order by benefit descending order
 		 */
