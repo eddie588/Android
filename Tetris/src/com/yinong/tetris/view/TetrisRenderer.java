@@ -61,7 +61,7 @@ public class TetrisRenderer {
 		drawBlock(activeBlock,canvas, paint, offsetX,offsetY,width,height);
 		
 		//	Next block
-		drawBlock(game.getNextBlock(),canvas, paint, offsetX + width +2,offsetY+20,width/3,height/3);
+		drawPreviewBlock(game.getNextBlock(),canvas, paint, offsetX + width +10,offsetY+30,15);
 		
 		//	Draw non-moving cells
 		for(BlockDot block:game.getBlocks()) {
@@ -159,6 +159,23 @@ public class TetrisRenderer {
 				y = offsetY+y*height/game.getRows();
 				cellRenderer.drawCell(canvas, paint, x, y, width/game.getColumns(), height/game.getRows(), partial);
 			}
+		}
+	}	
+	
+	public void drawPreviewBlock(Block block, Canvas canvas, Paint paint,
+			int offsetX, int offsetY, int cellWidth) {
+
+		Point[] spaces = block.getSpaces(0, 0, 0);
+
+		paint.setColor(block.getColor());
+
+		for (int i = 0; i < spaces.length; i++) {
+			int x = spaces[i].x;
+			int y = spaces[i].y;
+
+			x = offsetX + x * cellWidth;
+			y = offsetY + y * cellWidth;
+			cellRenderer.drawCell(canvas, paint, x, y, cellWidth, cellWidth, 1);
 		}
 	}	
 
