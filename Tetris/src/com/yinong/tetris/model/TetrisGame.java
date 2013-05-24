@@ -237,7 +237,7 @@ public class TetrisGame  {
 	}
 	
 	void  blockLanded() {
-		Point[] spaces = activeBlock.getSpacesUsed();
+		Position[] spaces = activeBlock.getSpacesUsed();
 		// break active block into pieces
 		
 		for(int i=0;i<spaces.length;i++) {
@@ -411,7 +411,7 @@ public class TetrisGame  {
 	 */
 	
 	boolean canMove(Block block,int direction) {
-		Point[] spaceNeeded = block.getSpaceNeeded(direction);
+		Position[] spaceNeeded = block.getSpaceNeeded(direction);
 		if( borderHit(spaceNeeded)) {
 			return false;
 		}
@@ -429,7 +429,7 @@ public class TetrisGame  {
 	 * @return
 	 */
 	
-	public boolean blockHit(Point[] spaceNeeded) {
+	public boolean blockHit(Position[] spaceNeeded) {
 		for (int s = 0; s < spaceNeeded.length; s++) {
 			if( isSpaceUsed(spaceNeeded[s].x,spaceNeeded[s].y) )
 				return true;
@@ -443,7 +443,7 @@ public class TetrisGame  {
 	 * @return
 	 */
 	
-	public boolean borderHit(Point[]spaceNeeded) {
+	public boolean borderHit(Position[]spaceNeeded) {
 		for(int i=0;i<spaceNeeded.length;i++) {
 			// X
 			if(spaceNeeded[i].x < 0 || spaceNeeded[i].x >= COLUMNS )

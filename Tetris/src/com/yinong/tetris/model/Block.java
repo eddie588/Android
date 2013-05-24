@@ -3,7 +3,6 @@ package com.yinong.tetris.model;
 import java.util.Random;
 
 import android.graphics.Color;
-import android.graphics.Point;
 
 public abstract class Block  {
 	public static final int LEFT=0;
@@ -114,12 +113,12 @@ public abstract class Block  {
 	}
 	
 
-	public Point[] getSpaceNeeded(int direction) {
+	public Position[] getSpaceNeeded(int direction) {
 		// Rotation
 		if( direction == ROTATE_RIGHT) {
 			return getSpaces(orientation+1>=4?0:orientation+1);
 		}
-		Point[] spaces = getSpacesUsed();
+		Position[] spaces = getSpacesUsed();
 		
 		// move down add Y
 		if (direction == DOWN) {
@@ -141,28 +140,28 @@ public abstract class Block  {
 	}
 
 	
-	public Point[] getSpacesUsed() {
+	public Position[] getSpacesUsed() {
 		return getSpaces(orientation);
 	}
 	
-	public Point[] getSpaces(int orientation) {
+	public Position[] getSpaces(int orientation) {
 		// TODO Auto-generated method stub
 		int[] template = getSpacesTemplate(orientation);
-		Point[] spaces = new Point[template.length/2];
+		Position[] spaces = new Position[template.length/2];
 		
 		for(int i=0;i<spaces.length;i++) {
-			spaces[i] = new Point(template[i*2] + getX(), template[i*2+1] + getY());
+			spaces[i] = new Position(template[i*2] + getX(), template[i*2+1] + getY());
 		}
 		return spaces;
 	}
 	
-	public Point[] getSpaces(int x,int y,int orientation) {
+	public Position[] getSpaces(int x,int y,int orientation) {
 		// TODO Auto-generated method stub
 		int[] template = getSpacesTemplate(orientation);
-		Point[] spaces = new Point[template.length/2];
+		Position[] spaces = new Position[template.length/2];
 		
 		for(int i=0;i<spaces.length;i++) {
-			spaces[i] = new Point(template[i*2] + x, template[i*2+1] + y);
+			spaces[i] = new Position(template[i*2] + x, template[i*2+1] + y);
 		}
 		return spaces;
 	}		

@@ -6,9 +6,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import android.graphics.Point;
-
 import com.yinong.tetris.model.Block;
+import com.yinong.tetris.model.Position;
 import com.yinong.tetris.model.TetrisCommand;
 import com.yinong.tetris.model.TetrisGame;
 
@@ -102,7 +101,7 @@ public class Simulation1 {
 		for(int orientation=0;orientation<4;orientation++) {
 			for(int x=0;x<game.getColumns();x++) {
 				for(int y=0;y<game.getRows();y++) {
-					Point[] spaces = block.getSpaces(x,y,orientation);
+					Position[] spaces = block.getSpaces(x,y,orientation);
 					if( game.borderHit(spaces) ) {
 						continue;
 					}
@@ -147,12 +146,12 @@ public class Simulation1 {
 		int x;
 		int y;
 		int orientation;
-		Point[] spaces;
+		Position[] spaces;
 		float benefit=0;
 		TetrisGame game;
 		int totalEmpty=0;
 		
-		public NewPosition(TetrisGame game, int x,int y,int orientation,Point[]spaces) {
+		public NewPosition(TetrisGame game, int x,int y,int orientation,Position[] spaces) {
 			this.x = x;
 			this.y = y;
 			this.spaces = spaces;
@@ -161,25 +160,27 @@ public class Simulation1 {
 		}
 		
 		
-		private  float clearBenefits[] = {0f,5f,15f,30f,60f};
+		private  float clearBenefits[] = {0f,1f,3f,5f,8f};
 		public void calculateCost(int startX,int startY) {
-		       benefit = clearBenefits[helper.getClearedRows(spaces)];
+		       benefit = 500*clearBenefits[helper.getClearedRows(spaces)];
 
 		       //	penalties for higher average Y
-	           benefit -= 5*((float)(game.getRows()-helper.getAverageY(spaces)))/game.getRows();
+	           benefit -= 1000*((float)(game.getRows()-helper.getAverageY(spaces)));
 	           
 //	           //	penalties for holes
 //	           benefit -= 0.5*getHolesBelowMe();
 
 	           //	penalties for holes
-	           benefit -= helper.getAllHolesBelowRow((int)helper.getAverageY(spaces))/5;
-
+	           benefit -= 500*helper.getAllHolesBelowRow((int)helper.getAverageY(spaces))/5;
+	           
+	           //	penalties for new holes
+	           benefit -= 200*helper.getNewHolesBelowSpaces(spaces);
+	       	
 	           //	penalties for put block in center
 //	           if( x < game.getColumns()/2 )
 //	            	benefit -= 0.01*((float)(getAverageX()))/game.getColumns();
 //	           else
 //	            	benefit -= 0.01*(game.getColumns()-(float)(getAverageX()))/game.getColumns();
-
 		}
 		
 

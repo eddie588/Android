@@ -17,6 +17,7 @@ import android.graphics.Xfermode;
 import com.yinong.tetris.R;
 import com.yinong.tetris.model.Block;
 import com.yinong.tetris.model.BlockDot;
+import com.yinong.tetris.model.Position;
 import com.yinong.tetris.model.ScoreCallout;
 import com.yinong.tetris.model.TetrisGame;
 
@@ -144,7 +145,7 @@ public class TetrisRenderer {
 	public void drawBlock(Block block,Canvas canvas, Paint paint, int offsetX, int offsetY,
 			int width, int height,float partial) {
 
-		Point[] spaces = block.getSpacesUsed();
+		Position[] spaces = block.getSpacesUsed();
 		
 		paint.setColor(block.getColor());
 		
@@ -165,7 +166,7 @@ public class TetrisRenderer {
 	public void drawPreviewBlock(Block block, Canvas canvas, Paint paint,
 			int offsetX, int offsetY, int cellWidth) {
 
-		Point[] spaces = block.getSpaces(0, 0, 0);
+		Position[] spaces = block.getSpaces(0, 0, 0);
 
 		paint.setColor(block.getColor());
 
