@@ -3,8 +3,6 @@ package com.yinong.tetris.simulation;
 import java.util.HashSet;
 import java.util.Set;
 
-import android.graphics.Point;
-
 import com.yinong.tetris.model.Position;
 import com.yinong.tetris.model.TetrisGame;
 
@@ -109,5 +107,28 @@ public class SimulationHelper  {
 				return true;
 		}
 		return false;
+	}
+	
+	private  int clearBenefits[] = {0,1,3,5,8};
+	
+	public int getBenefit (Position[] spaces) {
+		int benefit;
+
+		benefit = 500 * clearBenefits[getClearedRows(spaces)];
+
+		// penalties for higher average Y
+		benefit -= 100 * ((float) (game.getRows() - getAverageY(spaces)));
+
+		// // penalties for holes
+		// benefit -= 0.5*getHolesBelowMe();
+
+		// // penalties for holes
+		benefit -= 500 * getAllHolesBelowRow((int) getAverageY(spaces)) / 5;
+
+		// penalties for holes
+		benefit -= 500 * getAllHolesBelowSpaces(spaces);
+		// penalties for new holes
+		benefit -= 200 * getNewHolesBelowSpaces(spaces);
+		return benefit;
 	}
 }

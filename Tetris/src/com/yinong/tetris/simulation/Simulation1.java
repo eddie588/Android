@@ -2,8 +2,6 @@ package com.yinong.tetris.simulation;
 
 import java.util.Queue;
 import java.util.Random;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.yinong.tetris.model.Block;
@@ -21,15 +19,20 @@ public class Simulation1 {
 	
 	boolean running = true;
 	SimulationHelper helper;
+	Thread simuLoop = null;
 	
 	public Simulation1(TetrisGame game) {
 		this.game = game;
 		helper = new SimulationHelper(game);
 		
-		Thread simuLoop = new Thread() {
+
+	}
+	
+	public void startSimulate() {
+		simuLoop = new Thread() {
 			
 			public void run() {
-				while(running) {
+				while(running && !game.isGameOver() ) {
 					update();
 					try {
 						sleep(20);
@@ -40,12 +43,18 @@ public class Simulation1 {
 				}
 			}
 		};
-		simuLoop.start();
+		simuLoop.start();	
 	}
 
 	
 	public void stopSimulation() {
 		running = false;
+		try {
+			simuLoop.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public void update() {
@@ -65,7 +74,8 @@ public class Simulation1 {
 			currentBlock = block;
 			commandQueue.clear();	
 			long before = System.currentTimeMillis();
-			searchLowestFit(block);
+			//searchBestFit(block);
+			searchBestFit(block,game.getNextBlock());
 			System.out.println("update: " + (System.currentTimeMillis()-before) + " ms");			
 		} 
 		else {
@@ -97,13 +107,120 @@ public class Simulation1 {
 		commandQueue.add(new TetrisCommand(TetrisCommand.DROP));
 	}
 	
-	void searchLowestFit(Block block) {
-		SortedSet<NewPosition> newPositions = new TreeSet<NewPosition>();
+	/**
+	 * Search for best fit with one look ahead
+	 * @param active
+	 * @param next
+	 */
+	
+	void searchBestFit(Block active,Block next) {
+		NewPosition bestFit=null;
 		
 		for(int orientation=0;orientation<4;orientation++) {
 			for(int x=0;x<game.getColumns();x++) {
 				for(int y=0;y<game.getRows();y++) {
-					Position[] spaces = block.getSpaces(x,y,orientation);
+					Position[] spaces = active.getSpaces(x,y,orientation);
+					if( game.borderHit(spaces) ) {
+						continue;
+					}
+					if( game.blockHit(spaces)) {
+						break;
+					}
+					NewPosition pa = new NewPosition(game, x, y, orientation,spaces);
+					pa.benefit = getLookAheadBenefit(pa,next);
+					if( bestFit == null || pa.benefit > bestFit.benefit)
+						bestFit = pa;
+				}
+			}
+		}
+		
+		printDebugInfo(bestFit);
+		generateCommand(active,bestFit);
+	}
+	
+	int getLookAheadBenefit(NewPosition pActive,Block next) {
+		int best=0;
+		for(int orientation=0;orientation<4;orientation++) {
+			for(int x=0;x<game.getColumns();x++) {
+				for(int y=0;y<game.getRows();y++) {
+					Position[] spaces = pActive.spaces;
+					if( game.borderHit(spaces) ) {
+						continue;
+					}
+					if( game.blockHit(spaces)) {
+						break;
+					}
+					
+					NewPosition pa = new NewPosition(game, x, y, orientation,spaces);
+					
+					Position[] combinedSpaces = new Position[pActive.spaces.length + spaces.length];
+					for(int i=0;i<pActive.spaces.length;i++) {
+						combinedSpaces[i] = pActive.spaces[i];
+					}
+
+					for(int i=pActive.spaces.length;i<pActive.spaces.length + spaces.length;i++) {
+						combinedSpaces[i] = spaces[i-pActive.spaces.length];
+					}
+					
+					int benefit = helper.getBenefit(combinedSpaces);
+					if( benefit > best )
+						best = benefit;
+				}
+			}
+		}
+		return best;
+	}
+	
+	boolean spacesOverlap(Position[] p1,Position[] p2) {
+		for(int i=0;i<p1.length;i++) {
+			for(int j=0;j<p2.length;j++) {
+				if( p1[i].x == p2[j].x && p1[i].y == p2[j].y)
+					return true;
+			}
+		}
+		return false;
+	}
+	
+	void generateCommand(Block active,NewPosition bestFit) {
+		try {
+			int rotates = bestFit.orientation - active.getOrientation() >= 0 ? bestFit.orientation
+					- active.getOrientation()
+					: bestFit.orientation - active.getOrientation() + 4;
+
+			for (int i = 0; i < rotates; i++) {
+				commandQueue.add(new TetrisCommand(TetrisCommand.ROTATE_RIGHT));
+			}
+			if (bestFit.x > active.getX()) {
+				for (int i = active.getX(); i < bestFit.x; i++) {
+					commandQueue
+							.add(new TetrisCommand(TetrisCommand.MOVE_RIGHT));
+				}
+			}
+			if (bestFit.x < active.getX()) {
+				for (int i = active.getX(); i > bestFit.x; i--) {
+					commandQueue
+							.add(new TetrisCommand(TetrisCommand.MOVE_LEFT));
+				}
+			}
+			commandQueue.add(new TetrisCommand(TetrisCommand.DROP));
+
+			printDebugInfo(bestFit);
+		} catch (Exception e) {
+
+		}
+	}
+	
+	/**
+	 * Search for best bit without look ahead
+	 * @param block
+	 */
+	void searchBestFit(Block active) {
+		NewPosition bestFit=null;
+		
+		for(int orientation=0;orientation<4;orientation++) {
+			for(int x=0;x<game.getColumns();x++) {
+				for(int y=0;y<game.getRows();y++) {
+					Position[] spaces = active.getSpaces(x,y,orientation);
 					if( game.borderHit(spaces) ) {
 						continue;
 					}
@@ -111,68 +228,34 @@ public class Simulation1 {
 						break;
 					}
 					NewPosition p = new NewPosition(game, x, y, orientation,spaces);
-					p.calculateCost(block.getX(), block.getY());
-					newPositions.add(p);
+					p.benefit = helper.getBenefit(p.spaces);
+					if ( bestFit == null || bestFit.benefit < p.benefit )
+						bestFit = p;
 				}
 			}
 		}
 		
-		try {
-			
-			NewPosition p = newPositions.first();
-
-            int rotates = p.orientation - block.getOrientation()>=0?p.orientation - block.getOrientation():
-				p.orientation - block.getOrientation()+4;
-            
-			for(int i=0;i<rotates;i++) {
-				commandQueue.add(new TetrisCommand(TetrisCommand.ROTATE_RIGHT));
-			}
-			if( p.x > block.getX()) {
-				for(int i=block.getX();i<p.x;i++) {
-					commandQueue.add(new TetrisCommand(TetrisCommand.MOVE_RIGHT));
-				}
-			}
-			if( p.x < block.getX()) {
-				for(int i=block.getX();i>p.x;i--) {
-					commandQueue.add(new TetrisCommand(TetrisCommand.MOVE_LEFT));
-				}
-			}
-			commandQueue.add(new TetrisCommand(TetrisCommand.DROP));	
-			
-			printDebugInfo(newPositions);
-			
-
-		} catch(Exception e) {
-			
-		}
+		printDebugInfo(bestFit);
+		generateCommand(active,bestFit);
 	}
 	
 	int pieces =0;
-	void printDebugInfo(SortedSet<NewPosition> newPositions) {
+	void printDebugInfo(NewPosition newPosition) {
 		//	Debugging 
-		NewPosition first = newPositions.first();
-		System.out.println("" + (pieces++) + "/" + game.getScore() + "     |   " + first.toString() + " benefit: " + first.benefit);
+		System.out.println("" + (pieces++) + "/" + game.getScore() + "     |   " 
+				+ newPosition.toString() + " benefit: " + newPosition.benefit);
 //		for(int i=0;i<game.getRows();i++) {
-//			NewPosition p1 = null;
-//			if( !newPositions.isEmpty() )
-//				p1 = newPositions.first();
+//
 //			System.out.print("" + i%10 + " | ");
 //            for(int j=0;j<game.getColumns();j++) {
 //            	if( game.isSpaceUsed(j, i) )
 //            		System.out.print("*");
-//            	else if (helper.usesSpace(first.spaces, j, i))
+//            	else if (helper.usesSpace(newPosition.spaces, j, i))
 //            		System.out.print("o");
 //            	else 
 //            		System.out.print("-");
 //            }
-//
-//            if( p1 != null)
-//            	System.out.println("     |   " + p1.toString() + " benefit: " + p1.benefit);
-//            else
-//            	System.out.println("");
-//            newPositions.remove(p1);
 //		}	
-//		System.out.println("01234567890");
 	}
 	
 	class NewPosition implements Comparable<NewPosition>{
@@ -192,35 +275,6 @@ public class Simulation1 {
 			this.game = game;
 		}
 		
-		
-		private  int clearBenefits[] = {0,1,3,5,8};
-		public void calculateCost(int startX,int startY) {
-		       benefit = 500*clearBenefits[helper.getClearedRows(spaces)];
-
-		       //	penalties for higher average Y
-	           benefit -= 100*((float)(game.getRows()-helper.getAverageY(spaces)));
-	           
-//	           //	penalties for holes
-//	           benefit -= 0.5*getHolesBelowMe();
-
-//	           //	penalties for holes
-	           benefit -= 500*helper.getAllHolesBelowRow((int)helper.getAverageY(spaces))/5;
-	           
-	           //	penalties for holes
-	           benefit -= 500*helper.getAllHolesBelowSpaces(spaces);
-	   	           
-	           
-	           //	penalties for new holes
-	           benefit -= 200*helper.getNewHolesBelowSpaces(spaces);
-	       	
-	           //	penalties for put block in center
-//	           if( x < game.getColumns()/2 )
-//	            	benefit -= 0.01*((float)(getAverageX()))/game.getColumns();
-//	           else
-//	            	benefit -= 0.01*(game.getColumns()-(float)(getAverageX()))/game.getColumns();
-		}
-		
-
 		
 
 		/**
