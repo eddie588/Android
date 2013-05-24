@@ -48,7 +48,7 @@ public class TetrisGame2 extends TetrisGame {
 		for(Block block:cells) {
 			moveCelledAboveClearedCell(block.getX(),block.getY());
 		}
-		score += cells.size()*5;
+		//score += cells.size()*5;
 	}
 	
 	/**
