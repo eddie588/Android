@@ -63,8 +63,10 @@ public class Simulation1 {
 		Block block = game.getActiveBlock();
 		if( block != currentBlock ) {
 			currentBlock = block;
-			commandQueue.clear();			
+			commandQueue.clear();	
+			long before = System.currentTimeMillis();
 			searchLowestFit(block);
+			System.out.println("update: " + (System.currentTimeMillis()-before) + " ms");			
 		} 
 		else {
 			if( !commandQueue.isEmpty() ) {
@@ -136,6 +138,12 @@ public class Simulation1 {
 			}
 			commandQueue.add(new TetrisCommand(TetrisCommand.DROP));	
 			
+
+			for(int i=0;i<20&& !newPositions.isEmpty() ;i++) {
+				NewPosition p1 = newPositions.first();
+	            System.out.println(p1.toString() + " benefit: " + p1.benefit);
+	            newPositions.remove(p1);
+			}
 		
 		} catch(Exception e) {
 			
@@ -147,7 +155,7 @@ public class Simulation1 {
 		int y;
 		int orientation;
 		Position[] spaces;
-		float benefit=0;
+		int benefit=0;
 		TetrisGame game;
 		int totalEmpty=0;
 		
@@ -160,18 +168,22 @@ public class Simulation1 {
 		}
 		
 		
-		private  float clearBenefits[] = {0f,1f,3f,5f,8f};
+		private  int clearBenefits[] = {0,1,3,5,8};
 		public void calculateCost(int startX,int startY) {
 		       benefit = 500*clearBenefits[helper.getClearedRows(spaces)];
 
 		       //	penalties for higher average Y
-	           benefit -= 1000*((float)(game.getRows()-helper.getAverageY(spaces)));
+	           benefit -= 100*((float)(game.getRows()-helper.getAverageY(spaces)));
 	           
 //	           //	penalties for holes
 //	           benefit -= 0.5*getHolesBelowMe();
 
-	           //	penalties for holes
+//	           //	penalties for holes
 	           benefit -= 500*helper.getAllHolesBelowRow((int)helper.getAverageY(spaces))/5;
+	           
+	           //	penalties for holes
+	           benefit -= 500*helper.getAllHolesBelowSpaces(spaces);
+	   	           
 	           
 	           //	penalties for new holes
 	           benefit -= 200*helper.getNewHolesBelowSpaces(spaces);
@@ -199,5 +211,17 @@ public class Simulation1 {
 			return 0;
 		}
 		
+		@Override
+		public String toString() {
+			String s = "[";
+			for(int i=0;i<spaces.length;i++) {
+				if( i != spaces.length-1)
+					s += String.valueOf(spaces[i].x) + "," + String.valueOf(spaces[i].y) + ",";
+				else
+					s += String.valueOf(spaces[i].x) + "," + String.valueOf(spaces[i].y) ;
+			}
+			s += "]";	
+			return s;
+		}
 	}
 }

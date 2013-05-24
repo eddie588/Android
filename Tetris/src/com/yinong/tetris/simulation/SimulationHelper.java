@@ -19,7 +19,7 @@ public class SimulationHelper  {
 		int holes = 0;
 
 		for(int x=0;x<game.getColumns();x++) {
-			for(int y=row;y<game.getRows();y++) {
+			for(int y=row+1;y<game.getRows();y++) {
 				if( !game.isSpaceUsed(x, y))
 					holes++;
 			}
@@ -84,7 +84,7 @@ public class SimulationHelper  {
 		for(int row=0;row<game.getRows();row++) {
 			boolean cleared = true;
 			for(int col=0;col<game.getColumns();col++)	{
-				if( !game.isSpaceUsed(col,row) || !usesSpace(spaces,col,row)) {
+				if( !game.isSpaceUsed(col,row) && !usesSpace(spaces,col,row)) {
 					cleared = false;
 					break;
 				}
