@@ -40,6 +40,7 @@ public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
 		SurfaceHolder holder = getHolder();
 
 		simu = new Simulation1(game);
+		simu.startSimulate();
 		holder.addCallback(this);
 	}
 
