@@ -1,39 +1,37 @@
 package com.yinong.tetris.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import android.graphics.Point;
 import android.util.Log;
 
 public class TetrisGame  {
-	public static final int ROWS=18;
-	public static final int COLUMNS=10;
 	private boolean gameOver=false;
 	private boolean running = true;
+	private int gameRows;
+	private int gameColumns;
 	
-	ArrayList<TetrisGameListener> gameListeners = new ArrayList<TetrisGameListener>();
+	private ArrayList<TetrisGameListener> gameListeners = new ArrayList<TetrisGameListener>();
 	
 	private Queue<TetrisCommand> commandQueue;
 	
-	int score=0;
-	int highScore=0;
+	private int score=0;
+	private int highScore=0;
 
 	
 	private HashMap<String,BlockDot> allBlocks = new HashMap<String,BlockDot> ();
 	
 	private String error ="";
 	
-	private ArrayList<BlockDot> deletedBlocks = new ArrayList<BlockDot>();
+	private Collection<BlockDot> deletedBlocks = new ArrayList<BlockDot>();
 	
-	
-	//ArrayList<BlockDot> blocks;
-	Block	activeBlock;
-	Block	nextBlock;
+	protected Block	activeBlock;
+	protected Block	nextBlock;
 
 	int	periodActive = 500;
 	int periodOther = 100;
@@ -43,12 +41,30 @@ public class TetrisGame  {
 	
 	
 	public TetrisGame() {
-		activeBlock = new BlockT();
-		activeBlock.setX(4);
-		activeBlock.setY(0);	
+		gameRows = 18;
+		gameColumns = 10;
 		commandQueue = new ConcurrentLinkedQueue<TetrisCommand>();
 		resetGame();
 	}
+	
+	public TetrisGame(int cols,int rows) {
+		gameRows = rows;
+		gameColumns = cols;
+		commandQueue = new ConcurrentLinkedQueue<TetrisCommand>();
+		resetGame();
+	}
+	
+	
+	public void resetGame() {
+		if( score > highScore)
+		Log.d("Tetris","Game started");
+		activeBlock = createNewBlock();
+		nextBlock = createNewBlock();
+		gameOver = false;
+		score = 0;
+		allBlocks.clear();
+		deletedBlocks.clear();
+	}	
 	
 
 	public void addListener(TetrisGameListener listener) {
@@ -97,34 +113,16 @@ public class TetrisGame  {
 	}
 
 	
-	public void resetGame() {
-		if( score > highScore)
-		Log.d("Tetris","Game started");
-		activeBlock = createNewBlock();
-		nextBlock = createNewBlock();
-		gameOver = false;
-		score = 0;
-		allBlocks.clear();
-		deletedBlocks.clear();
-		
+	/**
+	 * Get all static blocks
+	 * @return collection of static blocks
+	 */
+	public Collection<BlockDot> getBlocks() {
+		return allBlocks.values();
 	}
 
 	
-	public ArrayList<BlockDot> getBlocks() {
-		ArrayList<BlockDot> blocks = new ArrayList<BlockDot>();
-		
-		for(int y=0;y<ROWS;y++) {
-			for(int x=0;x<COLUMNS;x++) {
-				BlockDot block = getBlockAt(x,y);
-				if( block != null)
-					blocks.add(block);
-			}
-		}
-		return blocks;
-	}
-
-	
-	public ArrayList<BlockDot> getDeletedBlocks() {
+	public Collection<BlockDot> getDeletedBlocks() {
 		return deletedBlocks;
 	}
 
@@ -177,8 +175,8 @@ public class TetrisGame  {
 		if( now - lastUpdateOther < periodOther )
 			return;
 		lastUpdateOther = now;
-		for(int y=0;y<ROWS;y++) {
-			for(int x=0;x<COLUMNS;x++) {
+		for(int y=0;y<getRows();y++) {
+			for(int x=0;x<getColumns();x++) {
 				BlockDot block = getBlockAt(x,y);
 				if( block != null)
 					block.update(now);
@@ -264,7 +262,7 @@ public class TetrisGame  {
 	}
 	
 	public boolean isPositionOnBoard(int x,int y) {
-		return x>=0 && x< COLUMNS && y >=0 && y <ROWS;
+		return x>=0 && x< getColumns() && y >=0 && y <getRows();
 	}
 	
 	public boolean isPositionUsed(int x,int y) {
@@ -279,7 +277,7 @@ public class TetrisGame  {
 		int clearedRows = 0;
 		for(int i=0;i<getRows();i++) {
 			if( clearRow(i) ) {
-				Log.d("Tetris","Cleared row:" +i);
+				//Log.d("Tetris","Cleared row:" +i);
 				clearedRows++;
 				// also move deleted Blocks that used to be above this row
 				for(BlockDot block:deletedBlocks) {
@@ -317,7 +315,7 @@ public class TetrisGame  {
 	
 	boolean clearRow(int row) {
 		boolean canClean = true;
-		for(int i=0;i<COLUMNS;i++) {
+		for(int i=0;i<getColumns();i++) {
 			if( !isSpaceUsed(i,row) ) {
 				canClean = false;
 				break;
@@ -325,7 +323,7 @@ public class TetrisGame  {
 		}
 		//	Move all rows above this row down by 1 row
 		if( canClean && row != 0) {
-			for(int c=0;c<COLUMNS;c++) {
+			for(int c=0;c<getColumns();c++) {
 				BlockDot block = getBlockAt(c,row);
 				deletedBlocks.add(block);  // keep deleted for animation
 				block.move(Block.DOWN);    // simulating moving for the deleted cell				
@@ -446,21 +444,21 @@ public class TetrisGame  {
 	public boolean borderHit(Position[]spaceNeeded) {
 		for(int i=0;i<spaceNeeded.length;i++) {
 			// X
-			if(spaceNeeded[i].x < 0 || spaceNeeded[i].x >= COLUMNS )
+			if(spaceNeeded[i].x < 0 || spaceNeeded[i].x >= getColumns() )
 				return true;
 			// Y
-			if(spaceNeeded[i].y >= ROWS )
+			if(spaceNeeded[i].y >= getRows() )
 				return true;
 		}
 		return false;
 	}
 
 	public int getRows() {
-		return ROWS;
+		return gameRows;
 	}
 	
 	public int getColumns() {
-		return COLUMNS;
+		return gameColumns;
 	}
 
 	
