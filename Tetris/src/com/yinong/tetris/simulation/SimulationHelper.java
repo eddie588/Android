@@ -6,19 +6,49 @@ import java.util.Set;
 import com.yinong.tetris.model.Position;
 import com.yinong.tetris.model.TetrisGame;
 
+/**
+ * The helper class assuming the game board does not change during the helper's life cycle.
+ * @author Yinong Jiang
+ *
+ */
+
 public class SimulationHelper  {
-	TetrisGame game;
+//	TetrisGame game;
+	int rows;
+	int cols;
+	int[] gameBoard;
+	static int[] COL_MASK={0x1,0x2,0x4,0x8,0x10,0x20,0x40,0x80,0x100,0x200,0x400,0x800};
+	static int[] FULL_MASK={0x1,0x3,0x7,0xf,0x1f,0x3f,0x7f,0xff,0x1ff,0x3ff,0x7ff,0xff};
 	
+
 	public SimulationHelper(TetrisGame game) {
-		this.game = game;
+		rows = game.getRows();
+		cols = game.getColumns();
+		gameBoard = new int[rows];
+		for(int y=0;y<rows;y++) {
+			int value = 0;
+			for(int x=0;x<cols;x++) {
+				if( game.isSpaceUsed(x, y) ) {
+					value |= COL_MASK[x];
+				}
+			}
+			gameBoard[y] = value;
+		}	
+	}
+
+	
+	boolean isSpaceUsed(int x,int y) {
+		if( x < 0 || x>= cols || y < 0 || y >= rows)
+			return false;
+		return (gameBoard[y] & COL_MASK[x]) != 0;
 	}
 	
 	public int getAllHolesBelowRow(int row) {
 		int holes = 0;
 
-		for(int x=0;x<game.getColumns();x++) {
-			for(int y=row+1;y<game.getRows();y++) {
-				if( !game.isSpaceUsed(x, y))
+		for(int x=0;x<cols;x++) {
+			for(int y=row+1;y<rows;y++) {
+				if( !isSpaceUsed(x, y))
 					holes++;
 			}
 		}
@@ -26,19 +56,19 @@ public class SimulationHelper  {
 	}	
 	
 	public int getLowestY(final Position[] spaces) {
-		for(int y=0;y<game.getRows();y++) {
+		for(int y=0;y<rows;y++) {
 			for(int i=0;i<spaces.length;i++) {
-				if( game.isSpaceUsed(spaces[i].x,spaces[i].y+y) )
+				if( isSpaceUsed(spaces[i].x,spaces[i].y+y) )
 					return y-1;
 			}
 		}
-		return game.getRows()-1;
+		return rows-1;
 	}	
 	
 	public int getLowestY(final Position[] spaces,final Position[] previousSpaces) {
-		for(int y=0;y<game.getRows();y++) {
+		for(int y=0;y<rows;y++) {
 			for(int i=0;i<spaces.length;i++) {
-				if( game.isSpaceUsed(spaces[i].x,spaces[i].y+y) )
+				if( isSpaceUsed(spaces[i].x,spaces[i].y+y) )
 					return y-1;
 				for(int j=0;j<previousSpaces.length;j++) {
 					if( spaces[i].x == previousSpaces[j].x && spaces[i].y+y ==  previousSpaces[j].y)
@@ -46,15 +76,15 @@ public class SimulationHelper  {
 				}
 			}
 		}
-		return game.getRows()-1;
+		return rows-1;
 	}
 	
 	public int getAllHolesBelowSpaces(final Position[] spaces) {
 		Set<Position> set = new HashSet<Position>();
 		
 		for(int i=0;i<spaces.length;i++) {
-			for(int r=spaces[i].y+1;r<game.getRows();r++) {
-				if( !game.isSpaceUsed(spaces[i].x, r) && !usesSpace(spaces, spaces[i].x, r));
+			for(int r=spaces[i].y+1;r<rows;r++) {
+				if( !isSpaceUsed(spaces[i].x, r) && !usesSpace(spaces, spaces[i].x, r));
 					set.add(spaces[i]);
 			}
 		}
@@ -69,9 +99,9 @@ public class SimulationHelper  {
 	public int getNewHolesBelowSpaces(final Position[] spaces) {
 		int holes = 0;
 		for(int i=0;i<spaces.length;i++) {
-			if(spaces[i].y+1>=game.getRows())
+			if(spaces[i].y+1>=rows)
 				continue;
-			if( !game.isSpaceUsed(spaces[i].x, spaces[i].y+1) &&  !usesSpace(spaces,spaces[i].x, spaces[i].y+1))
+			if( !isSpaceUsed(spaces[i].x, spaces[i].y+1) &&  !usesSpace(spaces,spaces[i].x, spaces[i].y+1))
 				holes++;
 
 		}
@@ -103,10 +133,10 @@ public class SimulationHelper  {
 	
 	public int getClearedRows(final Position[] spaces) {
 		int clearRows = 0;
-		for(int row=0;row<game.getRows();row++) {
+		for(int row=0;row<rows;row++) {
 			boolean cleared = true;
-			for(int col=0;col<game.getColumns();col++)	{
-				if( !game.isSpaceUsed(col,row) && !usesSpace(spaces,col,row)) {
+			for(int col=0;col<cols;col++)	{
+				if( !isSpaceUsed(col,row) && !usesSpace(spaces,col,row)) {
 					cleared = false;
 					break;
 				}
@@ -141,7 +171,7 @@ public class SimulationHelper  {
 		benefit = 500 * clearBenefits[getClearedRows(spaces)];
 
 		// penalties for higher average Y
-		benefit -= 100 * ((float) (game.getRows() - getAverageY(spaces)));
+		benefit -= 100 * ((float) (rows - getAverageY(spaces)));
 
 		// // penalties for holes
 		// benefit -= 0.5*getHolesBelowMe();

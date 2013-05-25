@@ -8,7 +8,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Paint.FontMetrics;
-import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
@@ -29,6 +28,8 @@ public class TetrisRenderer {
 	Bitmap lego;
 	Bitmap calloutImage;
 	CellRenderer cellRenderer;
+	public static int SLOW_DROP = 0;
+	public static int NORMAL_DROP = 1;
 	
 	int offsetX;
 	int offsetY;
@@ -47,7 +48,7 @@ public class TetrisRenderer {
 //		cellRenderer = new PlainCellRenderer();
 	}
 	
-	public synchronized void draw(Canvas canvas,Paint paint,int offsetX,int offsetY,int width,int height) {
+	public synchronized void draw(int drawMode,Canvas canvas,Paint paint,int offsetX,int offsetY,int width,int height) {
 		
 		this.offsetX = offsetX;
 		this.offsetY = offsetY;
@@ -63,31 +64,13 @@ public class TetrisRenderer {
 		
 		//	Next block
 		drawPreviewBlock(game.getNextBlock(),canvas, paint, offsetX + width +10,offsetY+30,15);
-		
-		//	Draw non-moving cells
-		for(BlockDot block:game.getBlocks()) {
-			if( block.getMoving() == 0 )
-				drawBlock(block,canvas,paint,offsetX,offsetY,width,height);
-		}	
 
-		//	Draw moving cells
-		for(BlockDot block:game.getBlocks()) {
-			if( block.getMoving() > 0 ) {
-				int delta = (int)(block.getMoving() * height/game.getRows()); 
-				drawBlock(block,canvas,paint,offsetX,offsetY-delta,width,height);
-			}
-		}	
-		
-		//	Draw deleted cells
-		for(BlockDot block:game.getDeletedBlocks()) {
-			if( block.getMoving() > 0 ) {
-				float moving = block.getMoving();
-				int delta = (int)(moving * height/game.getRows()); 
-				drawBlock(block,canvas,paint,offsetX,offsetY-delta,width,height,moving>1f?1:moving);
-			}
-		}	
-		
-		
+		if( drawMode == SLOW_DROP ) {
+			drawSlowDroppingDeck(canvas,paint);
+		}
+		else
+			drawNormalDroppingDeck(canvas,paint);
+			
 		drawScore(canvas,0,30,paint);
 		
 		
@@ -112,6 +95,38 @@ public class TetrisRenderer {
 			canvas.drawBitmap(gameOver, src, dest, paint);
 		}
 	}
+	
+	void drawSlowDroppingDeck(Canvas canvas,Paint paint) {
+		//	Draw non-moving cells
+		for(BlockDot block:game.getBlocks()) {
+			if( block.getMoving() == 0 )
+				drawBlock(block,canvas,paint,offsetX,offsetY,width,height);
+		}	
+
+		//	Draw moving cells
+		for(BlockDot block:game.getBlocks()) {
+			if( block.getMoving() > 0 ) {
+				int delta = (int)(block.getMoving() * height/game.getRows()); 
+				drawBlock(block,canvas,paint,offsetX,offsetY-delta,width,height);
+			}
+		}	
+		
+		//	Draw deleted cells
+		for(BlockDot block:game.getDeletedBlocks()) {
+			if( block.getMoving() > 0 ) {
+				float moving = block.getMoving();
+				int delta = (int)(moving * height/game.getRows()); 
+				drawBlock(block,canvas,paint,offsetX,offsetY-delta,width,height,moving>1f?1:moving);
+			}
+		}	
+	}
+	
+	void drawNormalDroppingDeck(Canvas canvas,Paint paint) {
+		//	Draw non-moving cells
+		for(BlockDot block:game.getBlocks()) {
+			drawBlock(block,canvas,paint,offsetX,offsetY,width,height);
+		}	
+	}	
 
 	public void drawBlock(Block block,Canvas canvas, Paint paint, int offsetX, int offsetY,
 			int width, int height) {

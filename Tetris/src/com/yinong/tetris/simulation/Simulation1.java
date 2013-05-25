@@ -18,14 +18,10 @@ public class Simulation1 {
 	Queue<TetrisCommand> commandQueue = new ConcurrentLinkedQueue<TetrisCommand>();
 	
 	boolean running = true;
-	SimulationHelper helper;
 	Thread simuLoop = null;
 	
 	public Simulation1(TetrisGame game) {
 		this.game = game;
-		helper = new SimulationHelper(game);
-		
-
 	}
 	
 
@@ -122,6 +118,7 @@ public class Simulation1 {
 	
 	void searchBestFit(Block active,Block next) {
 		NewPosition bestFit=null;
+		SimulationHelper helper = new SimulationHelper(game);		
 		
 		for(int orientation=0;orientation<4;orientation++) {
 			for(int x=0;x<game.getColumns();x++) {
@@ -138,7 +135,7 @@ public class Simulation1 {
 				}
 				
 				NewPosition pa = new NewPosition(game, x, y, orientation,spaces);
-				pa.benefit = getLookAheadBenefit(pa,next);
+				pa.benefit = getLookAheadBenefit(pa,next,helper);
 				if( bestFit == null || pa.benefit > bestFit.benefit)
 					bestFit = pa;
 			}
@@ -148,7 +145,8 @@ public class Simulation1 {
 		generateCommand(active,bestFit);
 	}
 	
-	int getLookAheadBenefit(NewPosition pActive,Block next) {
+	int getLookAheadBenefit(NewPosition pActive,Block next,SimulationHelper helper) {
+				
 		int best=-1000000000;
 		for(int orientation=0;orientation<4;orientation++) {
 			for(int x=0;x<game.getColumns();x++) {
@@ -225,6 +223,7 @@ public class Simulation1 {
 	 * @param block
 	 */
 	void searchBestFit(Block active) {
+		SimulationHelper helper = new SimulationHelper(game);			
 		NewPosition bestFit=null;
 		
 		

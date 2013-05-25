@@ -1,6 +1,8 @@
 package com.yinong.tetris;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -28,10 +30,16 @@ public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
 	
 	Simulation1 simu;
 	
+	Bitmap play;
+	Bitmap demo;
 	
+	static int PLAY_MODE=0;
+	static int DEMO_MODE=1;
 	
 	long lastTouch = System.currentTimeMillis();
 	static final int TOUCH_PERIOD = 500;
+	
+	int mode = PLAY_MODE;
 
 	
 	public GameBoard(Context context, AttributeSet attrs) {
@@ -39,8 +47,12 @@ public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
 		gameRenderer = new TetrisRenderer(game,context);
 		SurfaceHolder holder = getHolder();
 
+		play = BitmapFactory.decodeResource(context.getResources(), R.drawable.play);
+		demo = BitmapFactory.decodeResource(context.getResources(), R.drawable.demo);
+		
+
 		simu = new Simulation1(game);
-		simu.startSimulate();
+
 		holder.addCallback(this);
 	}
 
@@ -90,8 +102,21 @@ public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
 
 		Paint paint = new Paint();
 		paint.setColor(Color.BLACK);
+		
 		canvas.drawRect(0, 0,600,1024,paint);		
-		gameRenderer.draw(canvas,paint,60,60,480,880);	
+
+		gameRenderer.draw(mode==DEMO_MODE?TetrisRenderer.NORMAL_DROP:TetrisRenderer.SLOW_DROP,
+				canvas,paint,60,60,480,880);	
+		
+//		//	Draw controls
+//		Rect dst = new Rect(550,150,595,195);
+//		Rect src = new Rect(0,0,play.getWidth(),play.getHeight());
+//		canvas.drawBitmap(play,src,dst,paint);
+//		
+//		dst = new Rect(550,220,595,265);
+//		src = new Rect(0,0,demo.getWidth(),demo.getHeight());		
+//		canvas.drawBitmap(demo,src,dst,paint);
+		
 	}
 	
 
@@ -137,10 +162,14 @@ public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
 	@Override
 	public boolean onFling(MotionEvent startEvent, MotionEvent endEvent, float xVelocity,
 			float yVelocity) {
-		if(endEvent.getY() - startEvent.getY() > 50) {
+		if(endEvent.getY() - startEvent.getY() > 100 ) {
 			game.addCommand(new TetrisCommand(TetrisCommand.DROP));
 			return true;
-		} else if (endEvent.getX() - startEvent.getX() > 50) {
+		}
+		else if ( endEvent.getY() - startEvent.getY() < -100 ) {
+			toggleMode();
+		}
+		else if (endEvent.getX() - startEvent.getX() > 50) {
 			game.addCommand(new TetrisCommand(TetrisCommand.MOVE_RIGHT));
 		}
 		else if (endEvent.getX() - startEvent.getX() < -50) {
@@ -159,7 +188,7 @@ public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
 	@Override
 	public boolean onScroll(MotionEvent arg0, MotionEvent arg1, float arg2,
 			float arg3) {
-		// TODO Auto-generated method stub
+
 		return false;
 	}
 
@@ -193,5 +222,17 @@ public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
 		}
 		return true;
 	}
-
+	
+	void toggleMode() {
+		if( mode == PLAY_MODE ) {
+			game.resetGame();
+			simu.startSimulate();
+			mode = DEMO_MODE;
+		}
+		else {
+			simu.stopSimulation();
+			game.resetGame();
+			mode = PLAY_MODE;
+		}
+	}
 }
