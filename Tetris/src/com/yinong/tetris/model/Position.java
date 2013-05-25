@@ -8,4 +8,9 @@ public class Position {
 		this.x = x;
 		this.y = y;
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		return x==((Position)o).x && y == ((Position)o).y;
+	}
 }
