@@ -28,19 +28,18 @@ public class Simulation1 {
 
 	}
 	
+
 	public void startSimulate() {
 		simuLoop = new Thread() {
 			
 			public void run() {
 				while(running ) {
 					try {
+						long before = System.currentTimeMillis();
 						update();
-					}
-					catch (Exception e) {
-						System.out.println(e.getMessage());
-					}
-					try {
-						sleep(20);
+						long diff = System.currentTimeMillis() - before;
+						if( diff < PERIOD)
+							sleep(PERIOD-diff);
 					}
 					catch (Exception e) {
 						
@@ -64,6 +63,7 @@ public class Simulation1 {
 		}
 	}
 	
+
 	public void update() {
 		if( game.isGameOver() ) {
 			commandQueue.clear();
@@ -81,8 +81,8 @@ public class Simulation1 {
 			currentBlock = block;
 			commandQueue.clear();	
 			long before = System.currentTimeMillis();
-			searchBestFit(block);
-			//searchBestFit(block,game.getNextBlock());
+			//searchBestFit(block);
+			searchBestFit(block,game.getNextBlock());
 			System.out.println("Search best fit: " + (System.currentTimeMillis()-before) + " ms");			
 		} 
 		else {
@@ -125,54 +125,63 @@ public class Simulation1 {
 		
 		for(int orientation=0;orientation<4;orientation++) {
 			for(int x=0;x<game.getColumns();x++) {
-				for(int y=0;y<game.getRows();y++) {
-					Position[] spaces = active.getSpaces(x,y,orientation);
-					if( game.borderHit(spaces) ) {
-						continue;
-					}
-					if( game.blockHit(spaces)) {
-						break;
-					}
-					NewPosition pa = new NewPosition(game, x, y, orientation,spaces);
-					pa.benefit = getLookAheadBenefit(pa,next);
-					if( bestFit == null || pa.benefit > bestFit.benefit)
-						bestFit = pa;
+				Position[] spaces = active.getSpaces(x,0,orientation);
+				if( game.borderHit(spaces) ) {
+					continue;
 				}
+				
+				int y = helper.getLowestY(spaces);
+				spaces = active.getSpaces(x,y,orientation);
+				
+				if( game.blockHit(spaces)) {
+					break;
+				}
+				
+				NewPosition pa = new NewPosition(game, x, y, orientation,spaces);
+				pa.benefit = getLookAheadBenefit(pa,next);
+				if( bestFit == null || pa.benefit > bestFit.benefit)
+					bestFit = pa;
 			}
 		}
 		
-		//printDebugInfo(bestFit);
+		printDebugInfo(bestFit);
 		generateCommand(active,bestFit);
 	}
 	
 	int getLookAheadBenefit(NewPosition pActive,Block next) {
-		int best=0;
+		int best=-1000000000;
 		for(int orientation=0;orientation<4;orientation++) {
 			for(int x=0;x<game.getColumns();x++) {
-				for(int y=0;y<game.getRows();y++) {
-					Position[] spaces = pActive.spaces;
-					if( game.borderHit(spaces) ) {
-						continue;
-					}
-					if( game.blockHit(spaces)) {
-						break;
-					}
-					
-					NewPosition pa = new NewPosition(game, x, y, orientation,spaces);
-					
-					Position[] combinedSpaces = new Position[pActive.spaces.length + spaces.length];
-					for(int i=0;i<pActive.spaces.length;i++) {
-						combinedSpaces[i] = pActive.spaces[i];
-					}
-
-					for(int i=pActive.spaces.length;i<pActive.spaces.length + spaces.length;i++) {
-						combinedSpaces[i] = spaces[i-pActive.spaces.length];
-					}
-					
-					int benefit = helper.getBenefit(combinedSpaces);
-					if( benefit > best )
-						best = benefit;
+				Position[] prevSpaces = pActive.spaces;
+				
+				Position[] nextSpaces = next.getSpaces(x, 0, orientation);
+				if (game.borderHit(nextSpaces)) {
+					continue;
 				}
+				
+				int y = helper.getLowestY(nextSpaces, prevSpaces);
+				
+				nextSpaces = next.getSpaces(x, y, orientation);
+				
+				if (game.blockHit(nextSpaces)) {
+					break;
+				}
+
+				Position[] combinedSpaces = new Position[prevSpaces.length
+						+ nextSpaces.length];
+				for (int i = 0; i < pActive.spaces.length; i++) {
+					combinedSpaces[i] = prevSpaces[i];
+				}
+
+				for (int i = pActive.spaces.length; i < prevSpaces.length
+						+ nextSpaces.length; i++) {
+					combinedSpaces[i] = nextSpaces[i - prevSpaces.length];
+				}
+
+				int benefit = helper.getBenefit(combinedSpaces);
+				if (benefit > best)
+					best = benefit;
+
 			}
 		}
 		return best;

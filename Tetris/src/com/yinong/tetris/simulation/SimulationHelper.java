@@ -33,6 +33,20 @@ public class SimulationHelper  {
 			}
 		}
 		return game.getRows()-1;
+	}	
+	
+	public int getLowestY(final Position[] spaces,final Position[] previousSpaces) {
+		for(int y=0;y<game.getRows();y++) {
+			for(int i=0;i<spaces.length;i++) {
+				if( game.isSpaceUsed(spaces[i].x,spaces[i].y+y) )
+					return y-1;
+				for(int j=0;j<previousSpaces.length;j++) {
+					if( spaces[i].x == previousSpaces[j].x && spaces[i].y+y ==  previousSpaces[j].y)
+						return y-1;
+				}
+			}
+		}
+		return game.getRows()-1;
 	}
 	
 	public int getAllHolesBelowSpaces(final Position[] spaces) {
