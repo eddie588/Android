@@ -19,9 +19,8 @@ public class TetrisGame  {
 	private ArrayList<TetrisGameListener> gameListeners = new ArrayList<TetrisGameListener>();
 	
 	private Queue<TetrisCommand> commandQueue;
+
 	
-	private int score=0;
-	private int highScore=0;
 
 	
 	private HashMap<String,BlockDot> allBlocks = new HashMap<String,BlockDot> ();
@@ -35,6 +34,8 @@ public class TetrisGame  {
 
 	int	periodActive = 500;
 	int periodOther = 100;
+	
+	GameStats gameStats = new GameStats();
 	
 	
 	ScoreCallout callout=null;
@@ -56,14 +57,13 @@ public class TetrisGame  {
 	
 	
 	public void resetGame() {
-		if( score > highScore)
-		Log.d("Tetris","Game started");
 		activeBlock = createNewBlock();
 		nextBlock = createNewBlock();
 		gameOver = false;
-		score = 0;
 		allBlocks.clear();
 		deletedBlocks.clear();
+		gameStats.resetStats();
+		gameStats.addBlock();
 	}	
 	
 
@@ -82,7 +82,7 @@ public class TetrisGame  {
 	
 
 	public int getScore() {
-		return score;
+		return gameStats.getScore();
 	}
 
 	public ScoreCallout getCallout() {
@@ -91,11 +91,11 @@ public class TetrisGame  {
 
 
 	public int getHighScore() {
-		return highScore;
+		return gameStats.getHighScore();
 	}
 
 	public void setHighScore(int highScore) {
-		this.highScore = highScore;
+		gameStats.setHighScore(highScore);
 	}
 
 	
@@ -211,6 +211,12 @@ public class TetrisGame  {
 			else if ( command.getCommand() == TetrisCommand.RESTART ) {
 				resetGame();
 			}			
+			else if ( command.getCommand() == TetrisCommand.SHOW_STATS ) {
+				gameStats.setVisible(true);
+			}
+			else if ( command.getCommand() == TetrisCommand.HIDE_STATS ) {
+				gameStats.setVisible(false);
+			}			
 		}
 	}
 	
@@ -228,7 +234,7 @@ public class TetrisGame  {
 			activeBlock.move(Block.DOWN);
 			addScore += 5;
 		}
-		score += addScore;
+		gameStats.addScore(addScore);
 		if( addScore > 0)
 			callout = new ScoreCallout(1,10,addScore);
 		blockLanded();
@@ -246,17 +252,16 @@ public class TetrisGame  {
 		clearCompletedCells();
 		activeBlock = nextBlock;
 		nextBlock = createNewBlock();
+		gameStats.addBlock();
 		
 		activeBlock.setY(0);
 		activeBlock.setX(4);
 		if(! canMove(activeBlock,Block.DOWN) ) {
 			gameOver = true;
-			if( score > highScore )
-				highScore = score;
-			
+	
 			//	Game over notify all listers
 			for(TetrisGameListener listener:gameListeners) {
-				listener.onGameOver(highScore);
+				listener.onGameOver(gameStats.getHighScore());
 			}
 		}		
 	}
@@ -304,7 +309,8 @@ public class TetrisGame  {
 		
 		if( addScore > 0 )
 			callout = new ScoreCallout(1,10,addScore);
-		score += addScore;
+		gameStats.addScore(addScore);
+		gameStats.addClearedRows(clearedRows);
 	}
 	
 	/**
@@ -460,6 +466,10 @@ public class TetrisGame  {
 	
 	public int getColumns() {
 		return gameColumns;
+	}
+	
+	public final GameStats getGameStats() {
+		return gameStats;
 	}
 
 	

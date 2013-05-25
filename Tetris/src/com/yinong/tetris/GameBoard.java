@@ -40,6 +40,8 @@ public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
 	static final int TOUCH_PERIOD = 500;
 	
 	int mode = PLAY_MODE;
+	
+	BitmapButton btnStats;
 
 	
 	public GameBoard(Context context, AttributeSet attrs) {
@@ -49,6 +51,9 @@ public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
 
 		play = BitmapFactory.decodeResource(context.getResources(), R.drawable.play);
 		demo = BitmapFactory.decodeResource(context.getResources(), R.drawable.demo);
+		
+		btnStats = new BitmapButton(BitmapFactory.decodeResource(context.getResources(), R.drawable.call_out),
+				new Rect(5,60,55,110));
 		
 
 		simu = new Simulation1(game);
@@ -108,15 +113,7 @@ public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
 		gameRenderer.draw(mode==DEMO_MODE?TetrisRenderer.NORMAL_DROP:TetrisRenderer.SLOW_DROP,
 				canvas,paint,60,60,480,880);	
 		
-//		//	Draw controls
-//		Rect dst = new Rect(550,150,595,195);
-//		Rect src = new Rect(0,0,play.getWidth(),play.getHeight());
-//		canvas.drawBitmap(play,src,dst,paint);
-//		
-//		dst = new Rect(550,220,595,265);
-//		src = new Rect(0,0,demo.getWidth(),demo.getHeight());		
-//		canvas.drawBitmap(demo,src,dst,paint);
-		
+		btnStats.draw(canvas, paint);	
 	}
 	
 
@@ -204,7 +201,13 @@ public class GameBoard extends SurfaceView implements SurfaceHolder.Callback ,
 			game.resume();
 			return true;
 		}
-		if( game.isGameOver() ) {
+		if( btnStats.contains((int)event.getX(), (int)event.getY())) {
+			if( game.getGameStats().isVisible() )
+				game.addCommand(new TetrisCommand(TetrisCommand.HIDE_STATS));
+			else 
+				game.addCommand(new TetrisCommand(TetrisCommand.SHOW_STATS));
+		}
+		else if( game.isGameOver() ) {
 			Rect rect = new Rect(150,300,450,500);
 			if( rect.contains((int)event.getX(),(int)event.getY()) )
 				game.resetGame();

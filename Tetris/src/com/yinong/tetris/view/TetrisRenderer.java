@@ -16,6 +16,7 @@ import android.graphics.Xfermode;
 import com.yinong.tetris.R;
 import com.yinong.tetris.model.Block;
 import com.yinong.tetris.model.BlockDot;
+import com.yinong.tetris.model.GameStats;
 import com.yinong.tetris.model.Position;
 import com.yinong.tetris.model.ScoreCallout;
 import com.yinong.tetris.model.TetrisGame;
@@ -80,6 +81,30 @@ public class TetrisRenderer {
 		paint.setTextAlign(Paint.Align.CENTER);
 		paint.getFontMetrics(fm);
 		//canvas.drawText(game.getErrorString(), 10, 100 -(fm.ascent + fm.descent) / 2, paint);	
+		
+		//	Draw stats
+		GameStats gameStats = game.getGameStats();
+		if( gameStats.isVisible() ) {
+			
+			Rect src = new Rect(0,0,calloutImage.getWidth(),calloutImage.getHeight());
+			Rect dest = new Rect(80,100,380,300);
+			int textHight = 25;
+			
+			canvas.drawBitmap(calloutImage, src, dest, paint);
+			
+			paint.setColor(Color.LTGRAY);
+			int orgX = 220;
+			int orgY = 165;
+			canvas.drawText("Score: " + gameStats.getScore() , 
+					orgX , orgY, paint);
+			canvas.drawText("High Score: " + gameStats.getHighScore()  , 
+					orgX , orgY + textHight, paint);
+			canvas.drawText("Cleared Rows: " + gameStats.getClearedRows() , 
+					orgX , orgY + 2*textHight, paint);
+			canvas.drawText("Total Blocks: " + gameStats.getTotalBlocks() , 
+					orgX , orgY + 3*textHight, paint);
+		}
+		
 		
 		//	Draw game over
 		if( game.isGameOver() ) {

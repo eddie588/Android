@@ -15,6 +15,9 @@ public class TetrisCommand {
 	public static int DROP = 5;
 	public static int RESTART = 6;
 	
+	public static int SHOW_STATS = 7;
+	public static int HIDE_STATS = 8;
+	
 	private int command;
 	
 	public TetrisCommand(int command) {
