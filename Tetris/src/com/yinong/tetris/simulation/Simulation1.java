@@ -32,8 +32,13 @@ public class Simulation1 {
 		simuLoop = new Thread() {
 			
 			public void run() {
-				while(running && !game.isGameOver() ) {
-					update();
+				while(running ) {
+					try {
+						update();
+					}
+					catch (Exception e) {
+						System.out.println(e.getMessage());
+					}
 					try {
 						sleep(20);
 					}
@@ -74,9 +79,9 @@ public class Simulation1 {
 			currentBlock = block;
 			commandQueue.clear();	
 			long before = System.currentTimeMillis();
-			//searchBestFit(block);
-			searchBestFit(block,game.getNextBlock());
-			System.out.println("update: " + (System.currentTimeMillis()-before) + " ms");			
+			searchBestFit(block);
+			//searchBestFit(block,game.getNextBlock());
+			System.out.println("Search best fit: " + (System.currentTimeMillis()-before) + " ms");			
 		} 
 		else {
 			if( !commandQueue.isEmpty() ) {
@@ -134,7 +139,7 @@ public class Simulation1 {
 			}
 		}
 		
-		printDebugInfo(bestFit);
+		//printDebugInfo(bestFit);
 		generateCommand(active,bestFit);
 	}
 	
@@ -181,33 +186,27 @@ public class Simulation1 {
 		return false;
 	}
 	
-	void generateCommand(Block active,NewPosition bestFit) {
-		try {
-			int rotates = bestFit.orientation - active.getOrientation() >= 0 ? bestFit.orientation
-					- active.getOrientation()
-					: bestFit.orientation - active.getOrientation() + 4;
+	void generateCommand(Block active, NewPosition bestFit) {
+		if (bestFit == null)
+			return;
+		int rotates = bestFit.orientation - active.getOrientation() >= 0 ? 
+				bestFit.orientation	- active.getOrientation()
+				: bestFit.orientation - active.getOrientation() + 4;
 
-			for (int i = 0; i < rotates; i++) {
-				commandQueue.add(new TetrisCommand(TetrisCommand.ROTATE_RIGHT));
-			}
-			if (bestFit.x > active.getX()) {
-				for (int i = active.getX(); i < bestFit.x; i++) {
-					commandQueue
-							.add(new TetrisCommand(TetrisCommand.MOVE_RIGHT));
-				}
-			}
-			if (bestFit.x < active.getX()) {
-				for (int i = active.getX(); i > bestFit.x; i--) {
-					commandQueue
-							.add(new TetrisCommand(TetrisCommand.MOVE_LEFT));
-				}
-			}
-			commandQueue.add(new TetrisCommand(TetrisCommand.DROP));
-
-			printDebugInfo(bestFit);
-		} catch (Exception e) {
-
+		for (int i = 0; i < rotates; i++) {
+			commandQueue.add(new TetrisCommand(TetrisCommand.ROTATE_RIGHT));
 		}
+		if (bestFit.x > active.getX()) {
+			for (int i = active.getX(); i < bestFit.x; i++) {
+				commandQueue.add(new TetrisCommand(TetrisCommand.MOVE_RIGHT));
+			}
+		}
+		if (bestFit.x < active.getX()) {
+			for (int i = active.getX(); i > bestFit.x; i--) {
+				commandQueue.add(new TetrisCommand(TetrisCommand.MOVE_LEFT));
+			}
+		}
+		commandQueue.add(new TetrisCommand(TetrisCommand.DROP));
 	}
 	
 	/**
@@ -216,6 +215,7 @@ public class Simulation1 {
 	 */
 	void searchBestFit(Block active) {
 		NewPosition bestFit=null;
+		
 		
 		for(int orientation=0;orientation<4;orientation++) {
 			for(int x=0;x<game.getColumns();x++) {
@@ -235,7 +235,7 @@ public class Simulation1 {
 			}
 		}
 		
-		printDebugInfo(bestFit);
+		//printDebugInfo(bestFit);
 		generateCommand(active,bestFit);
 	}
 	

@@ -314,28 +314,26 @@ public class TetrisGame  {
 	 */
 	
 	boolean clearRow(int row) {
-		boolean canClean = true;
 		for(int i=0;i<getColumns();i++) {
 			if( !isSpaceUsed(i,row) ) {
-				canClean = false;
-				break;
+				return false;
 			}
 		}
 		//	Move all rows above this row down by 1 row
-		if( canClean && row != 0) {
+		if( row != 0) {
 			for(int c=0;c<getColumns();c++) {
 				BlockDot block = getBlockAt(c,row);
 				deletedBlocks.add(block);  // keep deleted for animation
 				block.move(Block.DOWN);    // simulating moving for the deleted cell				
-				for(int r=row-1;r>=0;r--) {
-					setBlockAt(c,r+1,getBlockAt(c,r) );
-					if( getBlockAt(c,r) != null) {
-						getBlockAt(c,r).move(Block.DOWN);
+				for(int r=row;r>0;r--) {
+					setBlockAt(c,r,getBlockAt(c,r-1) );
+					if( getBlockAt(c,r-1) != null) {
+						getBlockAt(c,r-1).move(Block.DOWN);
 					}
 				}
 			}
 		}
-		return canClean;
+		return true;
 	}
 	
 
@@ -365,8 +363,11 @@ public class TetrisGame  {
 	public void setBlockAt(int x,int y,BlockDot block) {
 		if( x < 0 || x >= getColumns() || y<0 || y >= getRows() )
 			return;
-		String key = String.valueOf(x) + "_" + String.valueOf(y);
-		allBlocks.put(key,block);
+		String key = String.valueOf(x) + "_" + String.valueOf(y);		
+		allBlocks.remove(key);
+
+		if( block != null ) 
+			allBlocks.put(key,block);
 	}
 		
 	/**
