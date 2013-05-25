@@ -25,7 +25,17 @@ public class SimulationHelper  {
 		return holes;
 	}	
 	
-	public int getAllHolesBelowSpaces(Position[] spaces) {
+	public int getLowestY(final Position[] spaces) {
+		for(int y=0;y<game.getRows();y++) {
+			for(int i=0;i<spaces.length;i++) {
+				if( game.isSpaceUsed(spaces[i].x,spaces[i].y+y) )
+					return y-1;
+			}
+		}
+		return game.getRows()-1;
+	}
+	
+	public int getAllHolesBelowSpaces(final Position[] spaces) {
 		Set<Position> set = new HashSet<Position>();
 		
 		for(int i=0;i<spaces.length;i++) {
@@ -42,7 +52,7 @@ public class SimulationHelper  {
 	 * @param spaces
 	 * @return
 	 */
-	public int getNewHolesBelowSpaces(Position[] spaces) {
+	public int getNewHolesBelowSpaces(final Position[] spaces) {
 		int holes = 0;
 		for(int i=0;i<spaces.length;i++) {
 			if(spaces[i].y+1>=game.getRows())
@@ -55,7 +65,7 @@ public class SimulationHelper  {
 	}	
 		
 	
-	public float getAverageY(Position[] spaces) {
+	public float getAverageY(final Position[] spaces) {
 		float ay = 0 ;
 		for(int i=0;i<spaces.length;i++) {
 			ay += spaces[i].y;
@@ -63,7 +73,7 @@ public class SimulationHelper  {
 		return ay/(spaces.length);
 	}
 	
-	public float getAverageX(Position[] spaces) {
+	public float getAverageX(final Position[] spaces) {
 		float ax = 0 ;
 		for(int i=0;i<spaces.length;i++) {
 			ax += spaces[i].x;
@@ -77,7 +87,7 @@ public class SimulationHelper  {
 	 * @return
 	 */
 	
-	public int getClearedRows(Position[] spaces) {
+	public int getClearedRows(final Position[] spaces) {
 		int clearRows = 0;
 		for(int row=0;row<game.getRows();row++) {
 			boolean cleared = true;
@@ -101,7 +111,7 @@ public class SimulationHelper  {
 	 * @return
 	 */
 	
-	public boolean usesSpace(Position[] spaces,int col,int row) {
+	public boolean usesSpace(final Position[] spaces,int col,int row) {
 		for(int i=0;i<spaces.length;i++) {
 			if( col == spaces[i].x && row == spaces[i].y)
 				return true;
@@ -111,7 +121,7 @@ public class SimulationHelper  {
 	
 	private  int clearBenefits[] = {0,1,3,5,8};
 	
-	public int getBenefit (Position[] spaces) {
+	public int getBenefit (final Position[] spaces) {
 		int benefit;
 
 		benefit = 500 * clearBenefits[getClearedRows(spaces)];
@@ -126,7 +136,7 @@ public class SimulationHelper  {
 		benefit -= 500 * getAllHolesBelowRow((int) getAverageY(spaces)) / 5;
 
 		// penalties for holes
-		benefit -= 500 * getAllHolesBelowSpaces(spaces);
+		benefit -= 800 * getAllHolesBelowSpaces(spaces);
 		// penalties for new holes
 		benefit -= 200 * getNewHolesBelowSpaces(spaces);
 		return benefit;

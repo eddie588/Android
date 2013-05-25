@@ -48,6 +48,8 @@ public class Simulation1 {
 				}
 			}
 		};
+		currentBlock = null;
+		running = true;
 		simuLoop.start();	
 	}
 
@@ -217,21 +219,22 @@ public class Simulation1 {
 		NewPosition bestFit=null;
 		
 		
-		for(int orientation=0;orientation<4;orientation++) {
-			for(int x=0;x<game.getColumns();x++) {
-				for(int y=0;y<game.getRows();y++) {
-					Position[] spaces = active.getSpaces(x,y,orientation);
-					if( game.borderHit(spaces) ) {
-						continue;
-					}
-					if( game.blockHit(spaces)) {
-						break;
-					}
-					NewPosition p = new NewPosition(game, x, y, orientation,spaces);
-					p.benefit = helper.getBenefit(p.spaces);
-					if ( bestFit == null || bestFit.benefit < p.benefit )
-						bestFit = p;
+		for (int orientation = 0; orientation < 4; orientation++) {
+			for (int x = 0; x < game.getColumns(); x++) {
+				Position[] spaces = active.getSpaces(x, 0, orientation);
+				if (game.borderHit(spaces)) {
+					continue;
 				}
+				
+				int y = helper.getLowestY(spaces);
+				spaces = active.getSpaces(x, y, orientation);
+				if (game.blockHit(spaces)) {
+					break;
+				}
+				NewPosition p = new NewPosition(game, x, y, orientation, spaces);
+				p.benefit = helper.getBenefit(p.spaces);
+				if (bestFit == null || bestFit.benefit < p.benefit)
+					bestFit = p;
 			}
 		}
 		
