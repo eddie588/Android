@@ -78,7 +78,7 @@ public class Simulation1 {
 			commandQueue.clear();	
 			long before = System.currentTimeMillis();
 			//searchBestFit(block);
-			searchBestFit(block,game.getNextBlock());
+			searchBestFit(block,game.getNextBlocks().peek());
 			System.out.println("Search best fit: " + (System.currentTimeMillis()-before) + " ms");			
 		} 
 		else {

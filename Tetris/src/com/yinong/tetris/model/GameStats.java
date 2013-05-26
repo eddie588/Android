@@ -7,18 +7,24 @@ package com.yinong.tetris.model;
 public class GameStats {
 	protected int highScore;
 	protected int score;
-	protected int clearedRows;
+	protected int[] clearedRows;
 	protected int totalBlocks;
 	protected boolean visible = false;
 	
 	public void resetStats() {
 		score = 0;
-		clearedRows = 0;
+		for(int i=0;i<clearedRows.length;i++) {
+			clearedRows[i] = 0;
+		}
 		totalBlocks = 0;
 		if( score > highScore )
 			highScore = score;
 	}
 	
+	public GameStats() {
+		clearedRows = new int[4];
+		resetStats();
+	}
 	
 	public int getHighScore() {
 		return highScore;
@@ -38,16 +44,23 @@ public class GameStats {
 	}
 	
 	public void addClearedRows(int cleared) {
-		clearedRows += cleared;
+		if( cleared> 0 )
+			clearedRows[cleared-1]++;
 	}
 	
-	
+
+	public int getClearedRows(int rows) {
+		return clearedRows[rows];
+	}
+
 	public int getClearedRows() {
-		return clearedRows;
+		int rows = 0;
+		for(int i=0;i<clearedRows.length;i++) {
+			rows += (i+1) * clearedRows[i];
+		}
+		return rows;
 	}
-	public void setClearedRows(int clearedRows) {
-		this.clearedRows = clearedRows;
-	}
+	
 	public int getTotalBlocks() {
 		return totalBlocks;
 	}

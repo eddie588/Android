@@ -71,7 +71,11 @@ public class TetrisRenderer {
 		drawBlock(activeBlock,canvas, paint);
 		
 		//	Next block
-		drawPreviewBlock(game.getNextBlock(),canvas, paint, offsetX + width +10,offsetY+30,15);
+		int i=0;
+		for(Block block:game.getNextBlocks()) {
+			drawPreviewBlock(block,canvas, paint, offsetX + width +10,offsetY+30 + i*60,15);
+			i++;
+		}
 
 		if( drawMode == SLOW_DROP ) {
 			drawSlowDroppingDeck(canvas,paint);

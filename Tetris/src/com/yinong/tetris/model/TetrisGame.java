@@ -7,8 +7,7 @@ import java.util.Iterator;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
-import android.util.Log;
+import java.util.concurrent.SynchronousQueue;
 
 public class TetrisGame  {
 	private boolean gameOver=false;
@@ -20,9 +19,6 @@ public class TetrisGame  {
 	
 	private Queue<TetrisCommand> commandQueue;
 
-	
-
-	
 	private HashMap<String,BlockDot> allBlocks = new HashMap<String,BlockDot> ();
 	
 	private String error ="";
@@ -30,10 +26,11 @@ public class TetrisGame  {
 	private Collection<BlockDot> deletedBlocks = new ArrayList<BlockDot>();
 	
 	protected Block	activeBlock;
-	protected Block	nextBlock;
+	protected Queue<Block>	nextBlocks;
 
 	int	periodActive = 500;
 	int periodOther = 100;
+	int previewSize;
 	
 	GameStats gameStats = new GameStats();
 	
@@ -44,13 +41,16 @@ public class TetrisGame  {
 	public TetrisGame() {
 		gameRows = 18;
 		gameColumns = 10;
+		previewSize = 3;
 		commandQueue = new ConcurrentLinkedQueue<TetrisCommand>();
+		nextBlocks = new ConcurrentLinkedQueue<Block>();
 		resetGame();
 	}
 	
-	public TetrisGame(int cols,int rows) {
+	public TetrisGame(int cols,int rows,int previewSize) {
 		gameRows = rows;
 		gameColumns = cols;
+		this.previewSize = previewSize;
 		commandQueue = new ConcurrentLinkedQueue<TetrisCommand>();
 		resetGame();
 	}
@@ -58,7 +58,10 @@ public class TetrisGame  {
 	
 	public void resetGame() {
 		activeBlock = createNewBlock();
-		nextBlock = createNewBlock();
+		nextBlocks.clear();
+		for(int i=0;i<previewSize;i++) {
+			nextBlocks.add(createNewBlock());
+		}
 		gameOver = false;
 		allBlocks.clear();
 		deletedBlocks.clear();
@@ -108,8 +111,8 @@ public class TetrisGame  {
 		return activeBlock;
 	}
 	
-	public Block getNextBlock() {
-		return nextBlock;
+	public Queue<Block> getNextBlocks() {
+		return nextBlocks;
 	}
 
 	
@@ -250,8 +253,8 @@ public class TetrisGame  {
 				setBlockAt(spaces[i].x,spaces[i].y, block);
 		}
 		clearCompletedCells();
-		activeBlock = nextBlock;
-		nextBlock = createNewBlock();
+		activeBlock = nextBlocks.remove();
+		nextBlocks.add(createNewBlock());
 		gameStats.addBlock();
 		
 		activeBlock.setY(0);
