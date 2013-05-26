@@ -28,6 +28,7 @@ public class TetrisRenderer {
 	Bitmap led;
 	Bitmap lego;
 	Bitmap calloutImage;
+	Bitmap blackboardImage;	
 	CellRenderer cellRenderer;
 	public static int SLOW_DROP = 0;
 	public static int NORMAL_DROP = 1;
@@ -36,6 +37,8 @@ public class TetrisRenderer {
 	int offsetY;
 	int width;
 	int height;
+	int blockWidth;
+	int blockHeight;
 	
 	public TetrisRenderer(TetrisGame game,Context context) {
 		this.game = game;
@@ -45,6 +48,7 @@ public class TetrisRenderer {
 		led = BitmapFactory.decodeResource(context.getResources(), R.drawable.led);
 		lego = BitmapFactory.decodeResource(context.getResources(), R.drawable.lego);
 		calloutImage = BitmapFactory.decodeResource(context.getResources(), R.drawable.call_out);
+		blackboardImage = BitmapFactory.decodeResource(context.getResources(), R.drawable.blackboard);
 		cellRenderer = new ImageCellRenderer(lego);
 //		cellRenderer = new PlainCellRenderer();
 	}
@@ -56,12 +60,15 @@ public class TetrisRenderer {
 		this.width = width;
 		this.height = height;
 		
-		drawBackground(canvas, paint, offsetX, offsetY, width, height);
+		blockWidth = width/game.getColumns();
+		blockHeight = height/game.getRows();
+		
+		drawBackground(canvas, paint);
 		Block activeBlock = game.getActiveBlock();
 		paint.setColor(activeBlock.getColor());
 		
 		//	Active block
-		drawBlock(activeBlock,canvas, paint, offsetX,offsetY,width,height);
+		drawBlock(activeBlock,canvas, paint);
 		
 		//	Next block
 		drawPreviewBlock(game.getNextBlock(),canvas, paint, offsetX + width +10,offsetY+30,15);
@@ -86,11 +93,11 @@ public class TetrisRenderer {
 		GameStats gameStats = game.getGameStats();
 		if( gameStats.isVisible() ) {
 			
-			Rect src = new Rect(0,0,calloutImage.getWidth(),calloutImage.getHeight());
+			Rect src = new Rect(0,0,blackboardImage.getWidth(),blackboardImage.getHeight());
 			Rect dest = new Rect(80,100,380,300);
 			int textHight = 25;
 			
-			canvas.drawBitmap(calloutImage, src, dest, paint);
+			canvas.drawBitmap(blackboardImage, src, dest, paint);
 			
 			paint.setColor(Color.LTGRAY);
 			int orgX = 220;
@@ -125,23 +132,22 @@ public class TetrisRenderer {
 		//	Draw non-moving cells
 		for(BlockDot block:game.getBlocks()) {
 			if( block.getMoving() == 0 )
-				drawBlock(block,canvas,paint,offsetX,offsetY,width,height);
+				drawBlock(block,canvas,paint);
 		}	
 
 		//	Draw moving cells
 		for(BlockDot block:game.getBlocks()) {
 			if( block.getMoving() > 0 ) {
-				int delta = (int)(block.getMoving() * height/game.getRows()); 
-				drawBlock(block,canvas,paint,offsetX,offsetY-delta,width,height);
+				int delta = (int)(block.getMoving() * blockHeight); 
+				drawBlock(block,canvas,paint,delta,1);
 			}
 		}	
 		
 		//	Draw deleted cells
 		for(BlockDot block:game.getDeletedBlocks()) {
 			if( block.getMoving() > 0 ) {
-				float moving = block.getMoving();
-				int delta = (int)(moving * height/game.getRows()); 
-				drawBlock(block,canvas,paint,offsetX,offsetY-delta,width,height,moving>1f?1:moving);
+				int delta = (int)(block.getMoving() * blockHeight); 
+				drawBlock(block,canvas,paint,delta,block.getMoving()>1?1:block.getMoving());
 			}
 		}	
 	}
@@ -149,15 +155,10 @@ public class TetrisRenderer {
 	void drawNormalDroppingDeck(Canvas canvas,Paint paint) {
 		//	Draw non-moving cells
 		for(BlockDot block:game.getBlocks()) {
-			drawBlock(block,canvas,paint,offsetX,offsetY,width,height);
+			drawBlock(block,canvas,paint);
 		}	
 	}	
 
-	public void drawBlock(Block block,Canvas canvas, Paint paint, int offsetX, int offsetY,
-			int width, int height) {
-		drawBlock(block,canvas, paint, offsetX, offsetY,
-				width, height,1f);
-	}
 	
 	public void drawCallout(ScoreCallout callout,Canvas canvas, Paint paint) {
 		if( callout == null || !callout.isAlive() )
@@ -168,10 +169,10 @@ public class TetrisRenderer {
 		int textWidth = score.length()*20;
 		
 		Rect src = new Rect(0,0,calloutImage.getWidth(),calloutImage.getHeight());
-		Rect dest = new Rect(offsetX + callout.getX()*width/game.getColumns(),
-				offsetY + callout.getY()*height/game.getRows(),
-				offsetX + callout.getX()*width/game.getColumns() + textWidth + 50,
-				offsetY + callout.getY()*height/game.getRows() + textHeight + 80);
+		Rect dest = new Rect(offsetX + callout.getX()*blockWidth,
+				offsetY + callout.getY()*blockHeight,
+				offsetX + callout.getX()*blockWidth + textWidth + 50,
+				offsetY + callout.getY()*blockHeight + textHeight + 80);
 		
 		canvas.drawBitmap(calloutImage,src,dest,paint);
 		
@@ -181,9 +182,11 @@ public class TetrisRenderer {
 		
 	}
 
+	public void drawBlock(Block block,Canvas canvas, Paint paint) {
+		drawBlock(block,canvas, paint,0,1f);
+	}
 	
-	public void drawBlock(Block block,Canvas canvas, Paint paint, int offsetX, int offsetY,
-			int width, int height,float partial) {
+	public void drawBlock(Block block,Canvas canvas, Paint paint, int deltaY,float partial) {
 
 		Position[] spaces = block.getSpacesUsed();
 		
@@ -196,15 +199,16 @@ public class TetrisRenderer {
 				int x = spaces[i].x;
 				int y = spaces[i].y;
 				
-				x = offsetX+x*width/game.getColumns();
-				y = offsetY+y*height/game.getRows();
-				cellRenderer.drawCell(canvas, paint, x, y, width/game.getColumns(), height/game.getRows(), partial);
+				x = offsetX + x*blockWidth;
+				y = offsetY + y*blockWidth - deltaY;
+
+				cellRenderer.drawCell(canvas, paint, x, y, blockWidth, blockHeight, partial);
 			}
 		}
 	}	
 	
 	public void drawPreviewBlock(Block block, Canvas canvas, Paint paint,
-			int offsetX, int offsetY, int cellWidth) {
+			int offsetX, int offsetY, int cellSize) {
 
 		Position[] spaces = block.getSpaces(0, 0, 0);
 
@@ -214,16 +218,16 @@ public class TetrisRenderer {
 			int x = spaces[i].x;
 			int y = spaces[i].y;
 
-			x = offsetX + x * cellWidth;
-			y = offsetY + y * cellWidth;
-			cellRenderer.drawCell(canvas, paint, x, y, cellWidth, cellWidth, 1);
+			x = offsetX + x * cellSize;
+			y = offsetY + y * cellSize;
+			cellRenderer.drawCell(canvas, paint, x, y, cellSize, cellSize, 1);
 		}
 	}	
 
 	
 	public Rect getUnitRect(int x,int y,int offsetX,int offsetY,int width,int height) {
-		return new Rect(offsetX+x*width/game.getColumns()+2,offsetY+y*height/game.getRows()+2,
-				offsetX+(x+1)*width/game.getColumns()-2,offsetY+(y+1)*height/game.getRows()-2);
+		return new Rect(offsetX+x*blockWidth+2,offsetY+y*blockHeight+2,
+				offsetX+(x+1)*blockWidth-2,offsetY+(y+1)*blockHeight-2);
 	}
 	
 	void drawScore(Canvas canvas,int x,int y,Paint paint) {
@@ -241,7 +245,7 @@ public class TetrisRenderer {
 		ledRenderer.drawString(String.valueOf(game.getHighScore()), canvas, 60, 30, 535, 50, paint);
 	}
 	
-	void drawBackground(Canvas canvas,Paint paint,int offsetX,int offsetY,int width,int height)  {
+	void drawBackground(Canvas canvas,Paint paint)  {
 		paint.setColor(Color.DKGRAY);
 
 		// draw grid
@@ -250,7 +254,7 @@ public class TetrisRenderer {
 		for(int i=0;i<game.getRows();i++) {
 			for(int j=0;j<game.getColumns();j++) {		
 				BlockDot block = new BlockDot(j,i,Color.DKGRAY);
-				drawBlock(block,canvas,paint,offsetX,offsetY,width,height);
+				drawBlock(block,canvas,paint);
 			}
 		}		
 	}	
