@@ -1,5 +1,7 @@
 package com.yinong.tetris.simulation;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -14,18 +16,29 @@ public class Simulation1 {
 	static int PERIOD = 50;
 	TetrisGame game;
 	
+	public static int RANDOM = 0;
+	public static int BESTBIT = 1;
+	public static int BESTBIT_ONELOOKAHEAD = 2;
+	public static int BESTBIT_TWOLOOKAHEAD = 3;
+	
 	Block currentBlock = null;
 	Queue<TetrisCommand> commandQueue = new ConcurrentLinkedQueue<TetrisCommand>();
 	
+	
 	boolean running = true;
 	Thread simuLoop = null;
+	int algorithm = RANDOM;
 	
 	public Simulation1(TetrisGame game) {
 		this.game = game;
 	}
 	
+	public void startSimulate()  {
+		startSimulate(BESTBIT_ONELOOKAHEAD);
+	}
 
-	public void startSimulate() {
+	public void startSimulate(int algorithm) {
+		this.algorithm = algorithm;
 		simuLoop = new Thread() {
 			
 			public void run() {
@@ -34,11 +47,11 @@ public class Simulation1 {
 						long before = System.currentTimeMillis();
 						update();
 						long diff = System.currentTimeMillis() - before;
-						if( diff < PERIOD)
-							sleep(PERIOD-diff);
+//						if( diff < PERIOD)
+//							sleep(PERIOD-diff);
 					}
 					catch (Exception e) {
-						
+						e.printStackTrace();
 					}
 				}
 			}
@@ -77,8 +90,20 @@ public class Simulation1 {
 			currentBlock = block;
 			commandQueue.clear();	
 			long before = System.currentTimeMillis();
-			//searchBestFit(block);
-			searchBestFit(block,game.getNextBlocks().peek());
+			if( algorithm == RANDOM ) {
+				searchRandomPath(block);
+			}
+			else if ( algorithm == BESTBIT) {
+				searchBestFit(block);
+			}
+			else if ( algorithm == BESTBIT_ONELOOKAHEAD) {
+				searchBestFit(block,game.getNextBlocks().peek());
+			}
+			else if ( algorithm == BESTBIT_TWOLOOKAHEAD) {
+				Object[] next = game.getNextBlocks().toArray();
+
+				searchBestFit(block,(Block)next[0],(Block)next[1]);
+			}
 			System.out.println("Search best fit: " + (System.currentTimeMillis()-before) + " ms");			
 		} 
 		else {
@@ -115,84 +140,139 @@ public class Simulation1 {
 	 * @param active
 	 * @param next
 	 */
-	
+	int print = 0;
 	void searchBestFit(Block active,Block next) {
 		NewPosition bestFit=null;
-		SimulationHelper helper = new SimulationHelper(game);		
+		SimulationHelper helper = new SimulationHelper(game);	
 		
-		for(int orientation=0;orientation<4;orientation++) {
-			for(int x=0;x<game.getColumns();x++) {
-				Position[] spaces = active.getSpaces(x,0,orientation);
-				if( game.borderHit(spaces) ) {
-					continue;
+		List<NewPosition> activeLanding = getLandingPositions(helper,active);
+		int bestBenefit = -100000000; 
+		
+
+
+		for(NewPosition activeP:activeLanding) {
+			helper.markPositions(activeP.spaces);
+
+			List<NewPosition> nextLanding = getLandingPositions(helper,next);
+			for (NewPosition nextP : nextLanding) {
+				Position[] combinedSpaces = new Position[activeP.spaces.length
+						+ nextP.spaces.length];
+				int p = 0;
+				for (int i = 0; i < activeP.spaces.length; i++) {
+					combinedSpaces[p++] = activeP.spaces[i];
 				}
-				
-				int y = helper.getLowestY(spaces);
-				spaces = active.getSpaces(x,y,orientation);
-				
-				if( game.blockHit(spaces)) {
-					break;
+
+				for (int i = 0; i < nextP.spaces.length; i++) {
+					combinedSpaces[p++] = nextP.spaces[i];
 				}
+				helper.markPositions(nextP.spaces);
+				int benefit = helper.getBenefit(combinedSpaces);
+				//int benefit = helper.getBenefit();
 				
-				NewPosition pa = new NewPosition(game, x, y, orientation,spaces);
-				pa.benefit = getLookAheadBenefit(pa,next,helper);
-				if( bestFit == null || pa.benefit > bestFit.benefit)
-					bestFit = pa;
+
+				if ( print > 0 )
+					System.out.println("" + benefit);
+				if( bestBenefit < benefit) {
+					bestFit = activeP;
+					activeP.benefit = benefit;
+					bestBenefit = benefit;
+				}
+				helper.unmarkPositions(nextP.spaces);
 			}
+
+
+			helper.unmarkPositions(activeP.spaces);
 		}
 		
+		if( print > 0 )
+			print--;
+		helper.printBoard();
 		printDebugInfo(bestFit);
 		generateCommand(active,bestFit);
 	}
 	
-	int getLookAheadBenefit(NewPosition pActive,Block next,SimulationHelper helper) {
-				
-		int best=-1000000000;
-		for(int orientation=0;orientation<4;orientation++) {
-			for(int x=0;x<game.getColumns();x++) {
-				Position[] prevSpaces = pActive.spaces;
-				
-				Position[] nextSpaces = next.getSpaces(x, 0, orientation);
-				if (game.borderHit(nextSpaces)) {
-					continue;
-				}
-				
-				int y = helper.getLowestY(nextSpaces, prevSpaces);
-				
-				nextSpaces = next.getSpaces(x, y, orientation);
-				
-				if (game.blockHit(nextSpaces)) {
-					break;
-				}
+	void searchBestFit(Block active,Block next1,Block next2) {
+		NewPosition bestFit=null;
+		SimulationHelper helper = new SimulationHelper(game);	
+		
+		List<NewPosition> activeLanding = getLandingPositions(helper,active);
+		int bestBenefit = -100000000; 
+		
+		for(NewPosition activeP:activeLanding) {
+			helper.markPositions(activeP.spaces);
+			List<NewPosition> next1Landing = getLandingPositions(helper,next1);
+			for (NewPosition next1P : next1Landing) {
+				helper.markPositions(next1P.spaces);
+				List<NewPosition> next2Landing = getLandingPositions(helper,next2);
+				for (NewPosition next2P : next2Landing) {
+					
+					Position[] combinedSpaces = new Position[activeP.spaces.length
+							+ next1P.spaces.length + next2P.spaces.length];
+					int p=0;
+					
+					
+					for (int i = 0; i < activeP.spaces.length; i++) {
+						combinedSpaces[p++] = activeP.spaces[i];
+					}
 
-				Position[] combinedSpaces = new Position[prevSpaces.length
-						+ nextSpaces.length];
-				for (int i = 0; i < pActive.spaces.length; i++) {
-					combinedSpaces[i] = prevSpaces[i];
+					for (int i = 0; i < next1P.spaces.length; i++) {
+						combinedSpaces[p++] = next1P.spaces[i];
+					}			
+					for (int i = 0; i < next2P.spaces.length; i++) {
+						combinedSpaces[p++] = next2P.spaces[i];
+					}							
+					helper.markPositions(next2P.spaces);
+					
+					int benefit = helper.getBenefit(combinedSpaces);
+					//int benefit = helper.getBenefit();					
+					if (bestBenefit < benefit) {
+						bestFit = activeP;
+						activeP.benefit = benefit;
+						bestBenefit = benefit;
+					}
+					
+					helper.unmarkPositions(next2P.spaces);
+										
 				}
-
-				for (int i = pActive.spaces.length; i < prevSpaces.length
-						+ nextSpaces.length; i++) {
-					combinedSpaces[i] = nextSpaces[i - prevSpaces.length];
-				}
-
-				int benefit = helper.getBenefit(combinedSpaces);
-				if (benefit > best)
-					best = benefit;
-
+				helper.unmarkPositions(next1P.spaces);
 			}
+			helper.unmarkPositions(activeP.spaces);
 		}
-		return best;
+				
+		printDebugInfo(bestFit);
+		generateCommand(active,bestFit);
 	}
 	
-	boolean spacesOverlap(Position[] p1,Position[] p2) {
-		for(int i=0;i<p1.length;i++) {
-			for(int j=0;j<p2.length;j++) {
-				if( p1[i].x == p2[j].x && p1[i].y == p2[j].y)
-					return true;
+	
+	/**
+	 * Get all the landing positions for a block
+	 * @param block
+	 * @param helper
+	 * @param prevBlocksPositions
+	 * @return
+	 */
+	
+	List<NewPosition> getLandingPositions(SimulationHelper helper,Block block) {
+		List<NewPosition> newPositions = new ArrayList<NewPosition>();
+		
+		for (int orientation = 0; orientation < 4; orientation++) {
+			for (int x = 0; x < game.getColumns(); x++) {
+				Position[] spaces = block.getSpaces(x, 0, orientation);
+				if (game.borderHit(spaces)) {
+					continue;
+				}
+
+				int y = helper.getLandingY(spaces);
+				spaces = block.getSpaces(x, y, orientation);
+
+				if (helper.areSpacesUsed(spaces)) {
+					break;
+				}
+	
+				newPositions.add(new NewPosition(x, y, orientation,spaces));
 			}
 		}
-		return false;
+		return newPositions;
 	}
 	
 	void generateCommand(Block active, NewPosition bestFit) {
@@ -223,30 +303,28 @@ public class Simulation1 {
 	 * @param block
 	 */
 	void searchBestFit(Block active) {
-		SimulationHelper helper = new SimulationHelper(game);			
 		NewPosition bestFit=null;
+		SimulationHelper helper = new SimulationHelper(game);	
 		
+		List<NewPosition> activeLanding = getLandingPositions(helper,active);
+		int bestBenefit = -100000000; 
 		
-		for (int orientation = 0; orientation < 4; orientation++) {
-			for (int x = 0; x < game.getColumns(); x++) {
-				Position[] spaces = active.getSpaces(x, 0, orientation);
-				if (game.borderHit(spaces)) {
-					continue;
-				}
-				
-				int y = helper.getLowestY(spaces);
-				spaces = active.getSpaces(x, y, orientation);
-				if (game.blockHit(spaces)) {
-					break;
-				}
-				NewPosition p = new NewPosition(game, x, y, orientation, spaces);
-				p.benefit = helper.getBenefit(p.spaces);
-				if (bestFit == null || bestFit.benefit < p.benefit)
-					bestFit = p;
+		for(NewPosition activeP:activeLanding) {
+			helper.markPositions(activeP.spaces);
+
+			int benefit = helper.getBenefit(activeP.spaces);
+
+			if (bestBenefit < benefit) {
+				bestFit = activeP;
+				activeP.benefit = benefit;
+				bestBenefit = benefit;
 			}
+
+			helper.unmarkPositions(activeP.spaces);
 		}
-		
-		//printDebugInfo(bestFit);
+				
+		helper.printBoard();
+		printDebugInfo(bestFit);
 		generateCommand(active,bestFit);
 	}
 	
@@ -275,15 +353,13 @@ public class Simulation1 {
 		int orientation;
 		Position[] spaces;
 		int benefit=0;
-		TetrisGame game;
 		int totalEmpty=0;
 		
-		public NewPosition(TetrisGame game, int x,int y,int orientation,Position[] spaces) {
+		public NewPosition(int x,int y,int orientation,Position[] spaces) {
 			this.x = x;
 			this.y = y;
 			this.spaces = spaces;
 			this.orientation = orientation;
-			this.game = game;
 		}
 		
 		
