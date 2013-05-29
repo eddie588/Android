@@ -5,12 +5,20 @@ import javax.microedition.khronos.opengles.GL10;
 
 import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLU;
+import android.view.View;
 
-import com.yinong.cubegame.model.Cube;
+import com.yinong.cubegame.model.Cube3By3;
 
 public class GameRenderer implements Renderer {
-	private Cube[] cubes;
+	private Cube3By3 cube;
 	float cubeRotation=0;
+	GameController controller;
+	View view;
+	
+	public GameRenderer(View view,Cube3By3 cube) {
+		this.cube = cube;
+		this.view = view;
+	}
 
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -22,42 +30,16 @@ public class GameRenderer implements Renderer {
 		gl.glShadeModel(GL10.GL_FLAT);
 
 		gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
-
-		cubes = new Cube[27];
 		
-		int p=0;
-		int x=0;
-		int y=0;
-		int z=0;
-		for(x=0;x<3;x++) {
-			for(y=0;y<3;y++) {
-				for(z=0;z<3;z++) {
-					cubes[p++] = new Cube( 1f*x,1f*y,1f*z,0.5f );
-				}
-			}
-		}
-		
-//		mCube = new Cube[2];
-//		
-//		mCube[0] = new Cube( 0f,0f,0f,0.25f );
-//		mCube[1] = new Cube( 0.5f,0.5f,0f,0.25f );
+		//controller = new GameController(view,cube);
 	}
 	
 	@Override
 	public void onDrawFrame(GL10 gl) {
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
-		for (int i = 0; i < 27; i++) {
-			gl.glLoadIdentity();
-
-			gl.glTranslatef(0.0f, 0.0f, -10.0f);
-			 //mCubeRotation = -90;
-			gl.glRotatef(cubeRotation, 1.0f, 1.0f, 1.0f);
-
-			if( cubes[i] != null )
-				cubes[i].draw(gl);
-			gl.glLoadIdentity();
-		}
+		//cubeRotation = 45;
+		cube.draw(gl, cubeRotation);
 
 		cubeRotation -= 2f;
 	}
@@ -74,9 +56,4 @@ public class GameRenderer implements Renderer {
 		gl.glMatrixMode(GL10.GL_MODELVIEW);
 		gl.glLoadIdentity();
 	}
-
-
-
-
-
 }

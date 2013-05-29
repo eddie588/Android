@@ -3,14 +3,18 @@ package com.yinong.cubegame.model;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.List;
 
 import javax.microedition.khronos.opengles.GL10;
+
+import android.opengl.Matrix;
 
 public class Cube {
 	 private FloatBuffer mVertexBuffer;
 	    private FloatBuffer mColorBuffer;
 	    private ByteBuffer  mIndexBuffer;
 	    private ByteBuffer  mLineBuffer;
+
 	        
 	    private float verticesTemplate[] = {
 	                                -1.0f, -1.0f, -1.0f,
@@ -65,7 +69,7 @@ public class Cube {
 	    		verticesTemplate[i+1] = verticesTemplate[i+1]*size+y;
 	    		verticesTemplate[i+2] = verticesTemplate[i+2]*size+z;
 	    	}
-            setupBuffer();
+            setupBuffer();       
 	    }
 	    
 	    
@@ -93,13 +97,14 @@ public class Cube {
 
 	    public void draw(GL10 gl) {             
 	            gl.glFrontFace(GL10.GL_CW);
-	            
+	
 	            gl.glVertexPointer(3, GL10.GL_FLOAT, 0, mVertexBuffer);
 	            gl.glColorPointer(4, GL10.GL_FLOAT, 0, mColorBuffer);
 	            
 	            gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 	            gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
-	             
+	            
+	            
 	            gl.glDrawElements(GL10.GL_TRIANGLES, 36, GL10.GL_UNSIGNED_BYTE, 
 	                            mIndexBuffer);
 	            gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
@@ -111,5 +116,27 @@ public class Cube {
 	            
 	            gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
 	            gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
+	    }
+	    	    
+	    
+	    public void rotate(float angle,float x,float y,float z) {
+		    float[] mModelMatrix = new float[16];    
+		    Matrix.setIdentityM(mModelMatrix, 0);
+	    	Matrix.rotateM(mModelMatrix, 0, angle, x, y, z);  	
+	    	float[] inVec = new float[4];
+	    	float[] outVec = new float[4];
+
+	    	for(int i=0;i<verticesTemplate.length;i+=3) {
+	    		inVec[0] = verticesTemplate[i];
+	    		inVec[1] = verticesTemplate[i+1];
+	    		inVec[2] = verticesTemplate[i+2];
+	    		inVec[3] = 1;
+	    		Matrix.multiplyMV(outVec, 0, mModelMatrix, 0, inVec, 0);
+	    		verticesTemplate[i] = outVec[0];
+	    		verticesTemplate[i+1] = outVec[1];
+	    		verticesTemplate[i+2] = outVec[2];
+	    	}
+            mVertexBuffer.put(verticesTemplate);
+            mVertexBuffer.position(0);	    	
 	    }
 }
