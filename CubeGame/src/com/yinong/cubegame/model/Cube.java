@@ -14,6 +14,8 @@ public class Cube {
 	    private FloatBuffer mColorBuffer;
 	    private ByteBuffer  mIndexBuffer;
 	    private ByteBuffer  mLineBuffer;
+	    private float size;
+	    private Vertex center;
 
 	        
 	    private float verticesTemplate[] = {
@@ -58,18 +60,17 @@ public class Cube {
                 0, 1, 1,2, 2,3, 3,0,
                 4, 5, 5,6,6,7,7,4,3,7,4,0,1,5,6,2
                 };	    
-	                
-	    public Cube() {
-	            setupBuffer();
-	    }
+	               
 	    
 	    public Cube(float x,float y,float z,float size) {
+	    	this.size = size; 
+	    	center = new Vertex(x,y,z);
 	    	for(int i=0;i<24;i+=3) {
-	    		verticesTemplate[i] = verticesTemplate[i]*size+x;
-	    		verticesTemplate[i+1] = verticesTemplate[i+1]*size+y;
-	    		verticesTemplate[i+2] = verticesTemplate[i+2]*size+z;
+	    		verticesTemplate[i] = verticesTemplate[i]*size/2+x;
+	    		verticesTemplate[i+1] = verticesTemplate[i+1]*size/2+y;
+	    		verticesTemplate[i+2] = verticesTemplate[i+2]*size/2+z;
 	    	}
-            setupBuffer();       
+            setupBuffer();    
 	    }
 	    
 	    
@@ -94,6 +95,18 @@ public class Cube {
             mLineBuffer.put(indicesLine);
             mLineBuffer.position(0);            
 	    }
+	    
+	    
+	    public float getSize() {
+	    	return size;
+	    }
+	    
+	    public Vertex getCenter() {
+//	    	center.x = (verticesTemplate[0] + verticesTemplate[18])/2;
+//	    	center.y = (verticesTemplate[1] + verticesTemplate[19])/2;
+//	    	center.z = (verticesTemplate[2] + verticesTemplate[20])/2;
+	    	return center;
+	    }
 
 	    public void draw(GL10 gl) {             
 	            gl.glFrontFace(GL10.GL_CW);
@@ -109,7 +122,7 @@ public class Cube {
 	                            mIndexBuffer);
 	            gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
 	            gl.glLineWidth(6f);
-	            gl.glEnable(gl.GL_LINE_SMOOTH);
+	            //gl.glEnable(gl.GL_LINE_SMOOTH);
 	            gl.glDrawElements(GL10.GL_LINES, 24, GL10.GL_UNSIGNED_BYTE, 
                         mLineBuffer);
 	            
@@ -136,6 +149,14 @@ public class Cube {
 	    		verticesTemplate[i+1] = outVec[1];
 	    		verticesTemplate[i+2] = outVec[2];
 	    	}
+    		inVec[0] = center.x;
+    		inVec[1] = center.y;
+    		inVec[2] = center.z;
+    		inVec[3] = 1;
+    		Matrix.multiplyMV(outVec, 0, mModelMatrix, 0, inVec, 0);
+    		center.x = outVec[0];
+    		center.y = outVec[1];
+    		center.z = outVec[2];	    	
             mVertexBuffer.put(verticesTemplate);
             mVertexBuffer.position(0);	    	
 	    }

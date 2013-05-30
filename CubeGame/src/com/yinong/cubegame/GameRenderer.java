@@ -5,6 +5,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLU;
+import android.opengl.Matrix;
 import android.view.View;
 
 import com.yinong.cubegame.model.Cube3By3;
@@ -14,7 +15,7 @@ public class GameRenderer implements Renderer {
 	float cubeRotation=0;
 	GameController controller;
 	View view;
-	
+
 	public GameRenderer(View view,Cube3By3 cube) {
 		this.cube = cube;
 		this.view = view;
@@ -30,19 +31,21 @@ public class GameRenderer implements Renderer {
 		gl.glShadeModel(GL10.GL_FLAT);
 
 		gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
-		
-		//controller = new GameController(view,cube);
+	
 	}
 	
 	@Override
 	public void onDrawFrame(GL10 gl) {
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
+		//gl.glMatrixMode(gl.GL_PROJECTION);
 		//cubeRotation = 45;
 		cube.draw(gl, cubeRotation);
 
 		cubeRotation -= 2f;
 	}
+	
+
 
 	@Override
 	public void onSurfaceChanged(GL10 gl, int width, int height) {

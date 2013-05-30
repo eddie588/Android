@@ -14,7 +14,7 @@ public class GameController  implements GestureDetector.OnGestureListener{
 	public GameController(View mainView,Cube3By3 cube) {
 		this.mainView = mainView;
 		this.cube = cube;
-		gestureDetector = new GestureDetector(this);
+		gestureDetector = new GestureDetector(mainView.getContext(), this);
 		
 		mainView.setOnTouchListener(new View.OnTouchListener() {
 			
@@ -26,9 +26,39 @@ public class GameController  implements GestureDetector.OnGestureListener{
 		});		
 	}
 	
+	float previousX = 0;
+	float previousY = 0;
+	long lastClick = 0;
 	public boolean onScreenTouch(MotionEvent event) {
-		if( event.getAction() == MotionEvent.ACTION_DOWN ) {
-		cube.rotate(0);
+		float x = event.getX();
+		float y = event.getY();
+		if (event.getAction() == MotionEvent.ACTION_DOWN) {
+			previousX = x;
+			previousY = y;
+		}
+		if (event.getAction() == MotionEvent.ACTION_MOVE) {
+
+			if (event.getAction() == MotionEvent.ACTION_MOVE && previousX > 0
+					&& previousY > 0) {
+
+				float deltaX = (x - previousX) / 6f;
+				float deltaY = (y - previousY) / 6f;
+
+				cube.rotate(deltaX, deltaY);
+
+			}
+
+			previousX = x;
+			previousY = y;
+		}
+		
+		if( event.getAction() == MotionEvent.ACTION_UP ) {
+			if( (event.getEventTime() - lastClick ) < 300 ){
+				//if( Math.abs(x-previousX) < 2 && Math.abs(y-previousY) < 2 ) {
+					cube.rotateDemo();
+				//}
+			}
+			lastClick = event.getEventTime();
 		}
 		return true;
 	}
@@ -53,9 +83,9 @@ public class GameController  implements GestureDetector.OnGestureListener{
 	}
 
 	@Override
-	public boolean onScroll(MotionEvent arg0, MotionEvent arg1, float arg2,
-			float arg3) {
-		// TODO Auto-generated method stub
+	public boolean onScroll(MotionEvent event1, MotionEvent event2, float dx,
+			float dy) {
+		cube.rotate(dx/6, dy/6);
 		return false;
 	}
 
@@ -67,7 +97,7 @@ public class GameController  implements GestureDetector.OnGestureListener{
 
 	@Override
 	public boolean onSingleTapUp(MotionEvent arg0) {
-		cube.rotate(0);
+		cube.rotateDemo();
 		return false;
 	}
 }
