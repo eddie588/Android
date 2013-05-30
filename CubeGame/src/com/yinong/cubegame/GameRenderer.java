@@ -12,7 +12,7 @@ import com.yinong.cubegame.model.Cube3By3;
 
 public class GameRenderer implements Renderer {
 	private Cube3By3 cube;
-	float cubeRotation=0;
+
 	GameController controller;
 	View view;
 
@@ -39,10 +39,10 @@ public class GameRenderer implements Renderer {
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
 		//gl.glMatrixMode(gl.GL_PROJECTION);
-		//cubeRotation = 45;
-		cube.draw(gl, cubeRotation);
 
-		cubeRotation -= 2f;
+		cube.update();
+		cube.draw(gl);
+
 	}
 	
 
@@ -52,11 +52,13 @@ public class GameRenderer implements Renderer {
 		gl.glViewport(0, 0, width, height);
 		gl.glMatrixMode(GL10.GL_PROJECTION);
 		gl.glLoadIdentity();
-		GLU.gluPerspective(gl, 45.0f, (float) width / (float) height, 0.1f,
+		GLU.gluPerspective(gl, 45f, (float) width / (float) height, 0.1f,
 				100.0f);
 		gl.glViewport(0, 0, width, height);
 
 		gl.glMatrixMode(GL10.GL_MODELVIEW);
 		gl.glLoadIdentity();
 	}
+	
+	
 }

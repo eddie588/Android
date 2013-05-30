@@ -5,6 +5,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -26,6 +27,10 @@ public class Cube3By3 {
 	float[] accumulatedRotation = new float[16];
 	float[] currentRotation = new float[16];
     private FloatBuffer matrixBuffer;
+    
+    private int shuffle  = 0;
+    private long period = 200;
+    private long lastUpdate = 0;
 	
 	public Cube3By3() {
 		cubes = new Cube[27];
@@ -53,15 +58,13 @@ public class Cube3By3 {
         matrixBuffer.position(0);
 	}
 	
-	public void draw(GL10 gl,float rotation) {
+	public void draw(GL10 gl) {
 		for (int i = 0; i < 27; i++) {
 			gl.glLoadIdentity();
 
 			gl.glTranslatef(0.0f, 0.0f, -10.0f);
 			
 			gl.glMultMatrixf(matrixBuffer);
-
-			//gl.glRotatef(rotation, 1.0f, 1.0f, 1.0f);
 
 			if( cubes[i] != null )
 				cubes[i].draw(gl);
@@ -102,12 +105,12 @@ public class Cube3By3 {
 		return list;
 	}
 	
-	int rotateCount = 0;
+	int rotateCount1 = 0;
 	public void rotateDemo() {
-		rotate(rotateCount/2,45);
+		rotate(rotateCount1/2,45);
 		//rotate(FACE_EQUATOR,45);
-		if( ++rotateCount == 18)
-			rotateCount = 0;
+		if( ++rotateCount1 == 18)
+			rotateCount1 = 0;
 	}
 	
 	public void rotate(int face,int angle) {
@@ -139,4 +142,36 @@ public class Cube3By3 {
 //		Matrix.multiplyMM(temporaryMatrix, 0, mModelMatrix, 0, accumulatedRotation, 0);
 //		System.arraycopy(temporaryMatrix, 0, mModelMatrix, 0, 16);		
 	}	
+	
+	int lastFace=0;
+	int rotateCount = 0;
+	public void update() {
+		long now = System.currentTimeMillis();
+		if( now - lastUpdate  < period ) {
+			return;
+		}
+		lastUpdate = now;
+		if( shuffle > 0 ) {
+
+			if( rotateCount == 0) {
+				Random r = new Random();
+				lastFace = r.nextInt(9);
+				
+				rotate(lastFace,45);
+				rotateCount++;
+			}
+			else {
+				rotateCount = 0;
+				rotate(lastFace,45);
+				shuffle--;
+			}
+
+		}
+	}
+	
+	public void shuffle() {
+		lastFace = 0;
+		rotateCount = 0;
+		shuffle = 20;
+	}
 }

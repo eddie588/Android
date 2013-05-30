@@ -29,7 +29,9 @@ public class MainActivity extends Activity  {
 		glView.setRenderer(new GameRenderer(glView,cube));
 
 		setContentView(glView);
+	
 		controller = new GameController(glView,cube);
+		//glView.setGLWrapper(controller);  
 	}
 
 	@Override
