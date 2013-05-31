@@ -43,11 +43,8 @@ public class GameController  implements GestureDetector.OnGestureListener,GLSurf
 		if (event.getAction() == MotionEvent.ACTION_DOWN) {
 			previousX = x;
 			previousY = y;
-		
-			Vertex v = getWorldCoords(x,y);
-			Ray ray = new Ray(gl,mainView.getWidth(),mainView.getHeight(),x,y);
-			System.out.println("touch: " + v.x + "," + v.y +"," + v.z);
-			cube.onClick(v);
+
+			cube.onClick(mainView.getWidth(),mainView.getHeight(),x,y,gl.getCurrentProjection(),gl.getCurrentModelView());
 		}
 		if (event.getAction() == MotionEvent.ACTION_MOVE) {
 

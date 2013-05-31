@@ -3,11 +3,12 @@ package com.yinong.cubegame.model;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.util.List;
 
 import javax.microedition.khronos.opengles.GL10;
 
 import android.opengl.Matrix;
+
+import com.yinong.cubegame.util.Vect3D;
 
 public class Cube {
 	 private FloatBuffer mVertexBuffer;
@@ -159,5 +160,17 @@ public class Cube {
     		center.z = outVec[2];	    	
             mVertexBuffer.put(verticesTemplate);
             mVertexBuffer.position(0);	    	
+	    }
+	    
+	    public Triangle[] getTriangles() {
+	    	Triangle[] triangle = new Triangle[indices.length/3];
+	    	for(int i=0;i<indices.length;i++) {
+	    		triangle[i] = new Triangle(
+	    			new Vect3D(verticesTemplate[indices[i]*3],verticesTemplate[indices[i]*3+1],verticesTemplate[indices[i]*3+2]),
+	    			new Vect3D(verticesTemplate[indices[i+1]*3],verticesTemplate[indices[i+1]*3+1],verticesTemplate[indices[i+1]*3+2]),
+	    			new Vect3D(verticesTemplate[indices[i+2]*3],verticesTemplate[indices[i+2]*3+1],verticesTemplate[indices[i+2]*3+2])
+	    		);
+	    	}
+	    	return triangle;
 	    }
 }

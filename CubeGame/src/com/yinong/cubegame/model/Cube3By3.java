@@ -11,6 +11,9 @@ import javax.microedition.khronos.opengles.GL10;
 
 import android.opengl.Matrix;
 
+import com.yinong.cubegame.util.Ray;
+import com.yinong.cubegame.util.Vect3D;
+
 public class Cube3By3 {
 	Cube[] cubes;
 	public static int FACE_FRONT = 0;
@@ -33,6 +36,8 @@ public class Cube3By3 {
     private long lastUpdate = 0;
     
     private Vertex position;
+    
+    private float NO_INTERSECT = 1000000f;
 	
 	public Cube3By3(float x,float y,float z) {
 		position = new Vertex(x,y,z);
@@ -176,23 +181,86 @@ public class Cube3By3 {
 		shuffle = 20;
 	}
 	
-	public void onClick(Vertex p) {
+	public void onClick(int width,int height,float x,float y,float[] projectionM,float[]modelViewM) {
 		float[] inV=new float[4];
 		float[] outV=new float[4];
 		float[] tmpM = new float[16];
+
+		Ray ray = new Ray(width,height,x,y,projectionM,modelViewM);
 		
-		inV[0]=p.x;
-		inV[1]=p.y;
-		inV[2]=p.z;
-		inV[3]=1f;
+		float cloestT = 1000f;
+		int cloestIndex = -1;
+
+		float[] tempM = new float[16];
+		float[] convM = new float[16];
+		Matrix.setIdentityM(tempM, 0);
+		Matrix.translateM(tempM, 0, position.x, position.y, position.z);
+		Matrix.multiplyMM(convM, 0, tempM, 0, accumulatedRotation, 0);
 		
-		Matrix.invertM(accumulatedRotation, 0, tmpM, 0);
-		Matrix.multiplyMV(outV, 0, accumulatedRotation, 0, inV, 0);
+		for(int i=0;i<27;i++) {
+			float t = intersectCube(ray,cubes[i].getTriangles(),convM);
+			if( t <  cloestT ) {
+				cloestT = t;
+				cloestIndex = i;
+			}
+		}
 		
-		System.out.println("Cube P:" + outV[0] + "," 
-				+ outV[1] + "," 
-				+ outV[2] + "," 
-				+ outV[3]);
+		if(cloestIndex >=0 )
+			System.out.println("closes hit: " + cubes[cloestIndex].getCenter());
+	}
+	
+	float intersectCube(Ray ray,Triangle[] triangles,float[] convM) {
+		float[] inV=new float[4];
+		float[] outV=new float[4];
+		float closestT = NO_INTERSECT;
+
 		
+		for(int i=0;i<triangles.length;i++) {
+			// V1
+			inV[0] = triangles[i].v1.x;
+			inV[1] = triangles[i].v1.y;
+			inV[2] = triangles[i].v1.z;
+			inV[3] = 1;
+
+			Matrix.multiplyMV(outV, 0, convM, 0, inV, 0);
+			
+			triangles[i].v1.x = outV[0]/outV[3];
+			triangles[i].v1.y = outV[1]/outV[3];
+			triangles[i].v1.z = outV[2]/outV[3];
+
+			// V2
+			inV[0] = triangles[i].v2.x;
+			inV[1] = triangles[i].v2.y;
+			inV[2] = triangles[i].v2.z;
+			inV[3] = 1;
+
+			Matrix.multiplyMV(outV, 0, convM, 0, inV, 0);
+			
+			triangles[i].v2.x = outV[0]/outV[3];
+			triangles[i].v2.y = outV[1]/outV[3];
+			triangles[i].v2.z = outV[2]/outV[3];
+
+			// V3
+			inV[0] = triangles[i].v3.x;
+			inV[1] = triangles[i].v3.y;
+			inV[2] = triangles[i].v3.z;
+			inV[3] = 1;
+
+			Matrix.multiplyMV(outV, 0, convM, 0, inV, 0);
+			
+			triangles[i].v3.x = outV[0]/outV[3];
+			triangles[i].v3.y = outV[1]/outV[3];
+			triangles[i].v3.z = outV[2]/outV[3];
+			
+			Vect3D ret = ray.intersectTriangle(triangles[i].v1, triangles[i].v2, triangles[i].v3);
+			
+			if( ret != null ) {
+				if ( ret.x < closestT) {
+					closestT = ret.x;
+				}
+			}
+			
+		}
+		return closestT;
 	}
 }

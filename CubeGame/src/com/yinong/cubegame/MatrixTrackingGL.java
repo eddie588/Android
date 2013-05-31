@@ -1082,5 +1082,33 @@ public class MatrixTrackingGL implements GL, GL10, GL10Ext, GL11, GL11Ext {
             throw new IllegalArgumentException("Matrix math difference.");
         }
     }
+    
+	public float[] getCurrentModelView() {
+		float[] mModelView = new float[16];
+		getMatrix(GL10.GL_MODELVIEW, mModelView);
+		return mModelView;
+	}
+
+	public float[] getCurrentProjection() {
+		float[] mProjection = new float[16];
+		getMatrix( GL10.GL_PROJECTION, mProjection);
+		return mProjection;
+	}
+
+	/**
+	 * Fetches a specific matrix from opengl
+	 * 
+	 * @param gl
+	 *            context
+	 * @param mode
+	 *            of the matrix
+	 * @param mat
+	 *            initialized float[16] array to fill with the matrix
+	 */
+	private void getMatrix( int mode, float[] mat) {
+		glMatrixMode(mode);
+		getMatrix(mat, 0);
+	}
+	    
 
 }
