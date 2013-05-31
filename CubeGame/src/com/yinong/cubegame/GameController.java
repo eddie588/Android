@@ -11,6 +11,7 @@ import android.view.View;
 
 import com.yinong.cubegame.model.Cube3By3;
 import com.yinong.cubegame.model.Vertex;
+import com.yinong.cubegame.util.*;
 
 public class GameController  implements GestureDetector.OnGestureListener,GLSurfaceView.GLWrapper{
 	GestureDetector gestureDetector;	
@@ -43,8 +44,10 @@ public class GameController  implements GestureDetector.OnGestureListener,GLSurf
 			previousX = x;
 			previousY = y;
 		
-//			Vertex v = getWorldCoords(x,y);
-//			System.out.println("touch: " + v.x + "," + v.y +"," + v.z);
+			Vertex v = getWorldCoords(x,y);
+			Ray ray = new Ray(gl,mainView.getWidth(),mainView.getHeight(),x,y);
+			System.out.println("touch: " + v.x + "," + v.y +"," + v.z);
+			cube.onClick(v);
 		}
 		if (event.getAction() == MotionEvent.ACTION_MOVE) {
 
@@ -54,6 +57,7 @@ public class GameController  implements GestureDetector.OnGestureListener,GLSurf
 				float deltaX = (x - previousX) / 6f;
 				float deltaY = (y - previousY) / 6f;
 
+				//System.out.println("rotate: " + deltaX + "," + deltaY);
 				cube.rotate(deltaX, deltaY);
 
 			}
@@ -115,6 +119,9 @@ public class GameController  implements GestureDetector.OnGestureListener,GLSurf
 		return false;
 	}
 	
+	public void getSelection(float touchX,float touchY) {
+		
+	}
 	
 	public Vertex getWorldCoords(float touchX,float touchY) {
 		// Initialize auxiliary variables.
