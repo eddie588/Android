@@ -5,9 +5,7 @@ import javax.microedition.khronos.opengles.GL;
 import android.opengl.GLSurfaceView;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
-import android.view.View;
 
-import com.yinong.cubegame.model.Cube;
 import com.yinong.cubegame.model.Cube3By3;
 import com.yinong.cubegame.util.Vect3D;
 
@@ -26,6 +24,8 @@ public class GameController implements OnGestureListener,
 	long lastClick = 0;
 	float unprocessedX = 0;
 	float unprocessedY = 0;
+	
+	boolean rotateEnabled = false;
 
 	@Override
 	public boolean onDown(MotionEvent event) {
@@ -33,12 +33,14 @@ public class GameController implements OnGestureListener,
 		lastClick = System.currentTimeMillis();
 		unprocessedX = 0;
 		unprocessedY = 0;
+		rotateEnabled = false;
 		return true;
 	}
 	
 	@Override
 	public boolean onScroll(MotionEvent event1, MotionEvent event2, float dx,
 			float dy) {
+
 		// allow fling a chance to handle
 		if( System.currentTimeMillis() - lastClick < 200 ) {
 			unprocessedX += dx;
@@ -62,9 +64,9 @@ public class GameController implements OnGestureListener,
 		float[] projectionM = gl.getCurrentProjection();
 		int CHECKNUM = 5;
 		float dx = (e2.getX()-e1.getX())/CHECKNUM;
-		float dy = (e2.getX()-e1.getX())/CHECKNUM;
+		float dy = (e2.getY()-e1.getY())/CHECKNUM;
 		float x = e1.getX();
-		float y = e2.getY();
+		float y = e1.getY();
 		
 
 		//	Get first and last hit
@@ -90,6 +92,7 @@ public class GameController implements OnGestureListener,
 	public void onLongPress(MotionEvent arg0) {
 		// TODO Auto-generated method stub
 		System.out.println("onLongPress");
+		rotateEnabled = true;
 
 	}
 
@@ -106,9 +109,9 @@ public class GameController implements OnGestureListener,
 		System.out.println("onSingleTapUp");
 		float x = event.getX();
 		float y = event.getY();
-//		if (event.getY() < 100) {
-//			cube.shuffle();
-//		}
+		if (event.getY() < 100) {
+			cube.shuffle();
+		}
 		System.out.println("hit: " + cube.intersect(gl.getViewportWidth(), 
 				gl.getViewportHeight(),x,y, gl.getCurrentProjection()));
 		
