@@ -120,10 +120,10 @@ public class Cube3By3 {
 	
 	int rotateCount1 = 0;
 	public void rotateDemo() {
-//		rotate(rotateCount1/2,45);
-//		//rotate(FACE_EQUATOR,45);
-//		if( ++rotateCount1 == 18)
-//			rotateCount1 = 0;
+		rotate(rotateCount1/2,45);
+		//rotate(FACE_EQUATOR,45);
+		if( ++rotateCount1 == 18)
+			rotateCount1 = 0;
 	}
 	
 	public void rotate(int face,int angle) {

@@ -24,14 +24,14 @@ public class MainActivity extends Activity  {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);	
 		
 		cube = new Cube3By3(0f,0f,-10f);
-		
-		glView = new GLSurfaceView(getApplicationContext());
+		controller = new GameController(glView,cube);
+		glView = new MainView(getApplicationContext(),controller);
 		GameRenderer renderer = new GameRenderer(glView,cube);
 		glView.setRenderer(renderer);
 
 		setContentView(glView);
 	
-		controller = new GameController(glView,cube);
+
 		glView.setGLWrapper(controller);  
 	}
 

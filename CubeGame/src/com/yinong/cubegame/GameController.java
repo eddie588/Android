@@ -5,7 +5,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.view.GestureDetector;
+import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -13,8 +13,7 @@ import com.yinong.cubegame.model.Cube;
 import com.yinong.cubegame.model.Cube3By3;
 import com.yinong.cubegame.model.Vertex;
 
-public class GameController  implements GestureDetector.OnGestureListener,GLSurfaceView.GLWrapper{
-	GestureDetector gestureDetector;	
+public class GameController  implements OnGestureListener,GLSurfaceView.GLWrapper{
 	View mainView;
 	final Cube3By3 cube;
 	MatrixTrackingGL gl;
@@ -22,16 +21,7 @@ public class GameController  implements GestureDetector.OnGestureListener,GLSurf
 	public GameController(View mainView,Cube3By3 cube) {
 		this.mainView = mainView;
 		this.cube = cube;
-		gestureDetector = new GestureDetector(mainView.getContext(), this);
-		
-		mainView.setOnTouchListener(new View.OnTouchListener() {
-			
-			@Override
-			public boolean onTouch(View view, MotionEvent event) {
-				//return gestureDetector.onTouchEvent(event);
-				return onScreenTouch(event);
-			}
-		});		
+	
 	}
 	
 	float previousX = 0;
@@ -81,7 +71,7 @@ public class GameController  implements GestureDetector.OnGestureListener,GLSurf
 
 	@Override
 	public boolean onDown(MotionEvent arg0) {
-		// TODO Auto-generated method stub
+		cube.rotateDemo();
 		return false;
 	}
 
@@ -101,7 +91,6 @@ public class GameController  implements GestureDetector.OnGestureListener,GLSurf
 	@Override
 	public boolean onScroll(MotionEvent event1, MotionEvent event2, float dx,
 			float dy) {
-		cube.rotate(dx/6, dy/6);
 		return false;
 	}
 
@@ -113,7 +102,7 @@ public class GameController  implements GestureDetector.OnGestureListener,GLSurf
 
 	@Override
 	public boolean onSingleTapUp(MotionEvent arg0) {
-		cube.rotateDemo();
+
 		return false;
 	}
 	
