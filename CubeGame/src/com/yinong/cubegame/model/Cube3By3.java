@@ -37,7 +37,7 @@ public class Cube3By3 {
 	private long period = 200;
 	private long lastUpdate = 0;
 
-	private Vertex position;
+	private Vect3D position;
 
 	private static float EPSILON = 0.00001f;
 	
@@ -46,7 +46,7 @@ public class Cube3By3 {
 	private Queue<RotateRequest> rotateRequests = new ConcurrentLinkedQueue<RotateRequest>();
 
 	public Cube3By3(float x, float y, float z) {
-		position = new Vertex(x, y, z);
+		position = new Vect3D(x, y, z);
 		cubes = new Cube[27];
 		int p = 0;
 		int cx = 0;
@@ -60,11 +60,13 @@ public class Cube3By3 {
 				}
 			}
 		}
+		
+		setupColors();
 		// controller = new GameController(view,cube);
 		Matrix.setIdentityM(accumulatedRotation, 0);
 		Matrix.setIdentityM(currentRotation, 0);
 
-		// Matrix.rotateM(accumulatedRotation,0,45f,1f,1f,1f);
+		Matrix.rotateM(accumulatedRotation,0,45f,1f,1f,1f);
 
 		ByteBuffer byteBuf = ByteBuffer
 				.allocateDirect(accumulatedRotation.length * 4);
@@ -73,8 +75,35 @@ public class Cube3By3 {
 		matrixBuffer.put(accumulatedRotation);
 		matrixBuffer.position(0);
 	}
+	
+	private void setupColors() {
+		
+		for(Cube cube:getCubes(FACE_FRONT)) {
+			cube.setColor(Cube.CUBE_FRONT,1f,0f,0f,1f);
+		}
+		
+		for(Cube cube:getCubes(FACE_BACK)) {
+			cube.setColor(Cube.CUBE_BACK,1f,1f,0f,1f);
+		}
+		
+		for(Cube cube:getCubes(FACE_LEFT)) {
+			cube.setColor(Cube.CUBE_LEFT,0f,0f,1f,1f);
+		}
+		
+		for(Cube cube:getCubes(FACE_RIGHT)) {
+			cube.setColor(Cube.CUBE_RIGHT,0f,1f,0f,1f);
+		}
+		
+		for(Cube cube:getCubes(FACE_TOP)) {
+			cube.setColor(Cube.CUBE_TOP,0,1f,1f,1f);
+		}
+		
+		for(Cube cube:getCubes(FACE_BOTTOM)) {
+			cube.setColor(Cube.CUBE_BOTTOM,1f,0f,1f,1f);
+		}		
+	}
 
-	public Vertex getPosition() {
+	public Vect3D getPosition() {
 		return position;
 	}
 

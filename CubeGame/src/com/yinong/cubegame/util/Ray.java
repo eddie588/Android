@@ -7,8 +7,6 @@ import javax.microedition.khronos.opengles.GL10;
 import android.opengl.GLU;
 import android.opengl.Matrix;
 
-import com.yinong.cubegame.model.Vertex;
-
 public class Ray {
 	Vect3D near = new Vect3D();
 	Vect3D far = new Vect3D();
