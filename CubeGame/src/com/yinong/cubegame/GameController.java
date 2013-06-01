@@ -110,7 +110,7 @@ public class GameController implements OnGestureListener,
 		float x = event.getX();
 		float y = event.getY();
 		if (event.getY() < 100) {
-			cube.shuffle();
+			cube.shuffle(20);
 		}
 		System.out.println("hit: " + cube.intersect(gl.getViewportWidth(), 
 				gl.getViewportHeight(),x,y, gl.getCurrentProjection()));

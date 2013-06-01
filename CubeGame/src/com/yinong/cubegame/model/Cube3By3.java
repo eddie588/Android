@@ -5,7 +5,9 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -38,6 +40,10 @@ public class Cube3By3 {
 	private Vertex position;
 
 	private static float EPSILON = 0.00001f;
+	
+
+	
+	private Queue<RotateRequest> rotateRequests = new ConcurrentLinkedQueue<RotateRequest>();
 
 	public Cube3By3(float x, float y, float z) {
 		position = new Vertex(x, y, z);
@@ -120,27 +126,11 @@ public class Cube3By3 {
 		return list;
 	}
 
-	int rotateCount1 = 0;
 
-	public void rotateDemo() {
-		rotate(rotateCount1 / 2, 45);
-		// rotate(FACE_EQUATOR,45);
-		if (++rotateCount1 == 18)
-			rotateCount1 = 0;
+	public void rotateFace(int face, int angle) {
+		rotateRequests.add(new RotateRequest(face,angle));
 	}
-
-	public void rotate(int face, int angle) {
-		List<Cube> list = getCubes(face);
-
-		for (Cube cube : list) {
-			if (face == FACE_FRONT || face == FACE_SIDE || face == FACE_BACK)
-				cube.rotate(angle, 0f, 0f, -1f);
-			if (face == FACE_LEFT || face == FACE_MIDDLE || face == FACE_RIGHT)
-				cube.rotate(angle, -1f, 0f, 0f);
-			if (face == FACE_TOP || face == FACE_EQUATOR || face == FACE_BOTTOM)
-				cube.rotate(angle, 0f, -1f, 0f);
-		}
-	}
+	
 
 	public void rotate(Vect3D p1, Vect3D p2) {
 		// Swipe on front face
@@ -176,11 +166,11 @@ public class Cube3By3 {
 				direction *= -1;
 			if (row1 == row2) {
 				if (row1 == 2)
-					rotate(FACE_TOP, 90 * direction);
+					rotateFace(FACE_TOP, 90 * direction);
 				else if (row1 == 1)
-					rotate(FACE_EQUATOR, 90 * direction);
+					rotateFace(FACE_EQUATOR, 90 * direction);
 				else if (row1 == 0)
-					rotate(FACE_BOTTOM, 90 * direction);
+					rotateFace(FACE_BOTTOM, 90 * direction);
 			}
 		} else {
 			// check to rotate left , middle or right
@@ -191,11 +181,11 @@ public class Cube3By3 {
 				direction *= -1;
 			if (col1 == col2) {
 				if (col1 == 2)
-					rotate(FACE_RIGHT, 90 * direction);
+					rotateFace(FACE_RIGHT, 90 * direction);
 				else if (col1 == 1)
-					rotate(FACE_MIDDLE, 90 * direction);
+					rotateFace(FACE_MIDDLE, 90 * direction);
 				else if (col1 == 0)
-					rotate(FACE_LEFT, 90 * direction);
+					rotateFace(FACE_LEFT, 90 * direction);
 			}
 		}
 	}
@@ -210,11 +200,11 @@ public class Cube3By3 {
 				direction *= -1;
 			if (row1 == row2) {
 				if (row1 == 2)
-					rotate(FACE_TOP, 90 * direction);
+					rotateFace(FACE_TOP, 90 * direction);
 				else if (row1 == 1)
-					rotate(FACE_EQUATOR, 90 * direction);
+					rotateFace(FACE_EQUATOR, 90 * direction);
 				else if (row1 == 0)
-					rotate(FACE_BOTTOM, 90 * direction);
+					rotateFace(FACE_BOTTOM, 90 * direction);
 			}
 		} else {
 			// check to rotate front,side or back
@@ -225,11 +215,11 @@ public class Cube3By3 {
 				direction *= -1;
 			if (col1 == col2) {
 				if (col1 == 2)
-					rotate(FACE_FRONT, 90 * direction);
+					rotateFace(FACE_FRONT, 90 * direction);
 				else if (col1 == 1)
-					rotate(FACE_SIDE, 90 * direction);
+					rotateFace(FACE_SIDE, 90 * direction);
 				else if (col1 == 0)
-					rotate(FACE_BACK, 90 * direction);
+					rotateFace(FACE_BACK, 90 * direction);
 			}
 		}
 	}
@@ -244,11 +234,11 @@ public class Cube3By3 {
 				direction *= -1;
 			if (col1 == col2) {
 				if (col1 == 2)
-					rotate(FACE_RIGHT, 90 * direction);
+					rotateFace(FACE_RIGHT, 90 * direction);
 				else if (col1 == 1)
-					rotate(FACE_MIDDLE, 90 * direction);
+					rotateFace(FACE_MIDDLE, 90 * direction);
 				else if (col1 == 0)
-					rotate(FACE_LEFT, 90 * direction);
+					rotateFace(FACE_LEFT, 90 * direction);
 			}
 		} else {
 			// check to rotate front,side or back
@@ -259,11 +249,11 @@ public class Cube3By3 {
 				direction *= -1;
 			if (col1 == col2) {
 				if (col1 == 2)
-					rotate(FACE_FRONT, 90 * direction);
+					rotateFace(FACE_FRONT, 90 * direction);
 				else if (col1 == 1)
-					rotate(FACE_SIDE, 90 * direction);
+					rotateFace(FACE_SIDE, 90 * direction);
 				else if (col1 == 0)
-					rotate(FACE_BACK, 90 * direction);
+					rotateFace(FACE_BACK, 90 * direction);
 			}
 		}
 	}
@@ -284,8 +274,7 @@ public class Cube3By3 {
 		matrixBuffer.position(0);
 	}
 
-	int lastFace = 0;
-	int rotateCount = 0;
+
 
 	public void update() {
 		long now = System.currentTimeMillis();
@@ -293,27 +282,65 @@ public class Cube3By3 {
 			return;
 		}
 		lastUpdate = now;
-		if (shuffle > 0) {
-
-			if (rotateCount == 0) {
-				Random r = new Random();
-				lastFace = r.nextInt(9);
-
-				rotate(lastFace, 45);
-				rotateCount++;
-			} else {
-				rotateCount = 0;
-				rotate(lastFace, 45);
-				shuffle--;
+		handleFaceRotateRequests();
+	}
+	
+	private int currentFace = 0;
+	private float remainingAngle=0;
+	private float ANIMATE_ANGLE = 22.5f;
+	
+	void handleFaceRotateRequests() {
+		if( remainingAngle == 0 && !rotateRequests.isEmpty()) {
+			RotateRequest r = rotateRequests.remove();
+			
+			remainingAngle = r.angle;
+			currentFace = r.face;
+		}
+		
+		if( remainingAngle != 0 ) {
+			//	keep rotating current layer
+			List<Cube> list = getCubes(currentFace);
+			
+			float angle;
+			
+			if( remainingAngle > 0 ) {
+				angle = (remainingAngle> ANIMATE_ANGLE)?ANIMATE_ANGLE:remainingAngle;
+			
+				remainingAngle -= ANIMATE_ANGLE;
+				if( remainingAngle < 0 )
+					remainingAngle = 0;
+			}
+			else {
+				angle = (remainingAngle < -ANIMATE_ANGLE)?-ANIMATE_ANGLE:remainingAngle;
+				
+				remainingAngle += ANIMATE_ANGLE;
+				if( remainingAngle > 0 )
+					remainingAngle = 0;
 			}
 
-		}
-	}
 
-	public void shuffle() {
-		lastFace = 0;
-		rotateCount = 0;
-		shuffle = 20;
+			for (Cube cube : list) {
+				if (currentFace == FACE_FRONT || currentFace == FACE_SIDE || currentFace == FACE_BACK)
+					cube.rotate(angle, 0f, 0f, -1f);
+				if (currentFace == FACE_LEFT || currentFace == FACE_MIDDLE || currentFace == FACE_RIGHT)
+					cube.rotate(angle, -1f, 0f, 0f);
+				if (currentFace == FACE_TOP || currentFace == FACE_EQUATOR || currentFace == FACE_BOTTOM)
+					cube.rotate(angle, 0f, -1f, 0f);
+			}			
+			return;
+		}
+	}	
+
+	/**
+	 * Randomly rotate face for the specified number of times. This simply add the rotate request 
+	 * to the queue
+	 * @param count
+	 */
+	public void shuffle(int count) {
+		Random r = new Random();
+		for(int i=0;i<count;i++) {
+			rotateFace(r.nextInt(9), 90);
+		}
 	}
 
 	public Vect3D intersect(int width, int height, float x, float y,
@@ -378,4 +405,13 @@ public class Cube3By3 {
 		return hit;
 	}
 
+	
+	class RotateRequest {
+		int angle;
+		int face;
+		public RotateRequest(int face,int angle) {
+			this.face = face;
+			this.angle = angle;
+		}
+	};
 }
