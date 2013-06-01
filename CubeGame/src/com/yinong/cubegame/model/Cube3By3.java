@@ -11,7 +11,6 @@ import javax.microedition.khronos.opengles.GL10;
 
 import android.opengl.Matrix;
 
-import com.yinong.cubegame.util.GLColor;
 import com.yinong.cubegame.util.Ray;
 import com.yinong.cubegame.util.Vect3D;
 
@@ -20,8 +19,8 @@ public class Cube3By3 {
 	public static int FACE_FRONT = 0;
 	public static int FACE_BACK = 1;
 	public static int FACE_SIDE = 2;
-	public static int FACE_UP = 3;
-	public static int FACE_DOWN = 4;
+	public static int FACE_TOP = 3;
+	public static int FACE_BOTTOM = 4;
 	public static int FACE_EQUATOR = 5;
 	public static int FACE_LEFT = 6;
 	public static int FACE_RIGHT = 7;
@@ -73,7 +72,7 @@ public class Cube3By3 {
 	}
 	
 	public synchronized void draw(GL10 gl) {
-		gl.glMatrixMode(gl.GL_MODELVIEW);
+		gl.glMatrixMode(GL10.GL_MODELVIEW);
 
 		gl.glLoadIdentity();
 
@@ -107,9 +106,9 @@ public class Cube3By3 {
 			}
 		}
 
-		if( face == FACE_UP || face == FACE_EQUATOR || face == FACE_DOWN ){
+		if( face == FACE_TOP || face == FACE_EQUATOR || face == FACE_BOTTOM ){
 			float y = 0;
-			y = (face==FACE_UP)? cubeSize :((face==FACE_DOWN)?-cubeSize:0);
+			y = (face==FACE_TOP)? cubeSize :((face==FACE_BOTTOM)?-cubeSize:0);
 			for(int i=0;i<27;i++) {
 				if ( Math.abs(cubes[i].getCenter().y - y) < EPSILON )
 					list.add(cubes[i]);
@@ -134,10 +133,39 @@ public class Cube3By3 {
 				cube.rotate(angle,0f,0f,-1f);
 			if( face == FACE_LEFT || face == FACE_MIDDLE || face == FACE_RIGHT )
 				cube.rotate(angle,-1f,0f,0f);
-			if( face == FACE_UP || face == FACE_EQUATOR || face == FACE_DOWN )
+			if( face == FACE_TOP || face == FACE_EQUATOR || face == FACE_BOTTOM )
 				cube.rotate(angle,0f,-1f,0f);
 		}
 	}
+	
+	public void rotate(Vect3D p1, Vect3D p2) {
+		//	Swipe on right face
+		if( Math.abs(p1.x-1.5*cubeSize) < EPSILON && Math.abs(p2.x-1.5*cubeSize) < EPSILON) {
+			//	check to rotate top, middle or bottom
+			int row1 = (int) (p1.y/cubeSize);
+			int row2 = (int) (p2.y/cubeSize);
+			if( row1 == row2) {
+				if( row1 == 1)
+					rotate(FACE_TOP,90);
+				else if (row1 == 0) 
+					rotate(FACE_MIDDLE,90);
+				else if (row1 == -1) 
+					rotate(FACE_BOTTOM,90);
+			}
+			//	check to rotate front, side or back
+			int col1 = (int) (p1.z/cubeSize);
+			int col2 = (int) (p2.z/cubeSize);
+			if( col1 == col2) {
+				if( col1 == 1)
+					rotate(FACE_FRONT,90);
+				else if (col1 == 0) 
+					rotate(FACE_SIDE,90);
+				else if (col1 == -1) 
+					rotate(FACE_BACK,90);
+			}			
+		}
+		
+	}	
 	
 	public synchronized void rotate(float dx,float dy) {
 		float[] temporaryMatrix = new float[16];
@@ -185,22 +213,22 @@ public class Cube3By3 {
 		shuffle = 20;
 	}
 	
-	public Cube intersect(int width,int height,float x,float y,float[] projectionM,float[]modelViewM) {
-		Ray ray = new Ray(width,height,x,y,projectionM,null);
-		
+	public Vect3D intersect(int width,int height,float x,float y,float[] projectionM) {
+
 		int cloestIndex = -1;
 
 		float[] tempM = new float[16];
-		float[] convM = new float[16];
+		float[] modelM = new float[16];
 		Matrix.setIdentityM(tempM, 0);
 		Matrix.translateM(tempM, 0, position.x, position.y, position.z);
-		Matrix.multiplyMM(convM, 0, tempM, 0, accumulatedRotation, 0);
-		
+		Matrix.multiplyMM(modelM, 0, tempM, 0, accumulatedRotation, 0);
+		Ray ray = new Ray(width,height,x,y,projectionM,modelM);
+				
 		Vect3D hit = null;
 		Vect3D hitP=null;
 		
 		for(int i=0;i<27;i++) {
-			Vect3D ret= intersectCube(ray,cubes[i].getTriangles(),convM);
+			Vect3D ret= intersectCube(ray,cubes[i].getTriangles());
 			if( ret != null ) {
 				if( hit == null || ret.x < hit.x ) {
 					cloestIndex = i;
@@ -211,68 +239,41 @@ public class Cube3By3 {
 		}
 		
 		if( hit != null  ) {
-			System.out.println("closes hit: " + cubes[cloestIndex].getCenter());
+//			Matrix.invertM(invertM, 0, convM, 0);
+//			hitP = hitP.transform(invertM);
+
+			System.out.println("closes hit: " + hitP);
 			System.out.println("index: " + cloestIndex);
 			
-
-			return cubes[cloestIndex];
+			return hitP;
+		} 
+		else {
+			System.out.println("missed");
 		}
 		return null;
 	}
 	
-	Vect3D intersectCube(Ray ray,Triangle[] triangles,float[] convM) {
-		float[] inV=new float[4];
-		float[] outV=new float[4];
-
-
+	/**
+	 * Find the intersect point for a list of triangles
+	 * @param ray
+	 * @param triangles
+	 * @return
+	 */
+	
+	Vect3D intersectCube(Ray ray,Triangle[] triangles) {
 		Vect3D hit=null;
 		
 		for(int i=0;i<triangles.length;i++) {
-			// V1
-			inV[0] = triangles[i].v1.x;
-			inV[1] = triangles[i].v1.y;
-			inV[2] = triangles[i].v1.z;
-			inV[3] = 1;
-
-			Matrix.multiplyMV(outV, 0, convM, 0, inV, 0);
-			
-			triangles[i].v1.x = outV[0]/outV[3];
-			triangles[i].v1.y = outV[1]/outV[3];
-			triangles[i].v1.z = outV[2]/outV[3];
-
-			// V2
-			inV[0] = triangles[i].v2.x;
-			inV[1] = triangles[i].v2.y;
-			inV[2] = triangles[i].v2.z;
-			inV[3] = 1;
-
-			Matrix.multiplyMV(outV, 0, convM, 0, inV, 0);
-			
-			triangles[i].v2.x = outV[0]/outV[3];
-			triangles[i].v2.y = outV[1]/outV[3];
-			triangles[i].v2.z = outV[2]/outV[3];
-
-			// V3
-			inV[0] = triangles[i].v3.x;
-			inV[1] = triangles[i].v3.y;
-			inV[2] = triangles[i].v3.z;
-			inV[3] = 1;
-
-			Matrix.multiplyMV(outV, 0, convM, 0, inV, 0);
-			
-			triangles[i].v3.x = outV[0]/outV[3];
-			triangles[i].v3.y = outV[1]/outV[3];
-			triangles[i].v3.z = outV[2]/outV[3];
-			
 			Vect3D ret = ray.intersectTriangle(triangles[i].v1, triangles[i].v2, triangles[i].v3);
 			
-			
 			if( ret != null ) {
-				System.out.println("hit: " + ray.getIntersectCoord(ret) + " t = " + ret.x);
+//				System.out.println("hit: " + ray.getIntersectCoord(ret) + " t = " + ret.x);
 				if( hit == null || ret.x < hit.x ) 
 					hit = ret;
 			}
 		}
 		return hit;
 	}
+
+
 }

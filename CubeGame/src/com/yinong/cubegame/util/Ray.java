@@ -37,6 +37,7 @@ public class Ray {
 		float[] farCoOrds = new float[3];
 		float[] temp = new float[4];
 		float[] temp2 = new float[4];
+		float[] invertM = new float[16];
 
 		float[] identityM = new float[16];
 
@@ -49,18 +50,20 @@ public class Ray {
 		// matrixGrabber.mProjection ));
 
 		Matrix.setIdentityM(identityM, 0);
+		if( modelViewM != null)
+			Matrix.invertM(invertM, 0, modelViewM, 0);
 
 		if( modelViewM == null)
 			modelViewM = identityM;
 //		printM(projectionM);
 //		printM(modelViewM);
 
-		int result = GLU.gluUnProject(winx, winy, 0f, modelViewM, 0,
+		int result = GLU.gluUnProject(winx, winy, 0f, identityM, 0,
 				projectionM, 0,
 				// identityM, 0, identityM, 0,
 				viewport, 0, temp, 0);
-
-		Matrix.multiplyMV(temp2, 0, modelViewM, 0, temp, 0);
+		if( modelViewM != null)
+			Matrix.multiplyMV(temp2, 0, invertM, 0, temp, 0);
 		if (result == GL10.GL_TRUE) {
 			nearCoOrds[0] = temp2[0] / temp2[3];
 			nearCoOrds[1] = temp2[1] / temp2[3];
@@ -68,11 +71,12 @@ public class Ray {
 
 		}
 
-		result = GLU.gluUnProject(winx, winy, 1f, modelViewM, 0, projectionM,
+		result = GLU.gluUnProject(winx, winy, 1f, identityM, 0, projectionM,
 				0,
 				// identityM, 0, identityM, 0,
 				viewport, 0, temp, 0);
-		Matrix.multiplyMV(temp2, 0, modelViewM, 0, temp, 0);
+		if( modelViewM != null)
+			Matrix.multiplyMV(temp2, 0, invertM, 0, temp, 0);
 		if (result == GL10.GL_TRUE) {
 			farCoOrds[0] = temp2[0] / temp2[3];
 			farCoOrds[1] = temp2[1] / temp2[3];
@@ -87,10 +91,10 @@ public class Ray {
 		near.y = nearCoOrds[1];
 		near.z = nearCoOrds[2];
 
-		System.out.println("Near:" + nearCoOrds[0] + "," + nearCoOrds[1] + ","
-				+ nearCoOrds[2]);
-		System.out.println("Far:" + farCoOrds[0] + "," + farCoOrds[1] + ","
-				+ farCoOrds[2]);
+//		System.out.println("Near:" + nearCoOrds[0] + "," + nearCoOrds[1] + ","
+//				+ nearCoOrds[2]);
+//		System.out.println("Far:" + farCoOrds[0] + "," + farCoOrds[1] + ","
+//				+ farCoOrds[2]);
 		
 		calculationDirection();
 	}

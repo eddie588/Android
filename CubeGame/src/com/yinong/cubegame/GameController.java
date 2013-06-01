@@ -1,212 +1,127 @@
 package com.yinong.cubegame;
 
 import javax.microedition.khronos.opengles.GL;
-import javax.microedition.khronos.opengles.GL10;
 
 import android.opengl.GLSurfaceView;
-import android.opengl.Matrix;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.yinong.cubegame.model.Cube;
 import com.yinong.cubegame.model.Cube3By3;
-import com.yinong.cubegame.model.Vertex;
+import com.yinong.cubegame.util.Vect3D;
 
-public class GameController  implements OnGestureListener,GLSurfaceView.GLWrapper{
-	View mainView;
+public class GameController implements OnGestureListener,
+		GLSurfaceView.GLWrapper {
 	final Cube3By3 cube;
 	MatrixTrackingGL gl;
-		
-	public GameController(View mainView,Cube3By3 cube) {
-		this.mainView = mainView;
-		this.cube = cube;
 	
+
+	public GameController(Cube3By3 cube) {
+		this.cube = cube;
 	}
 	
-	float previousX = 0;
-	float previousY = 0;
+	
+
 	long lastClick = 0;
-	public boolean onScreenTouch(MotionEvent event) {
-		float x = event.getX();
-		float y = event.getY();
-		if (event.getAction() == MotionEvent.ACTION_DOWN) {
-			previousX = x;
-			previousY = y;
+	float unprocessedX = 0;
+	float unprocessedY = 0;
 
-			Cube hitCube = cube.intersect(mainView.getWidth(),mainView.getHeight(),x,y,gl.getCurrentProjection(),gl.getCurrentModelView());
-			
-		}
-		if (event.getAction() == MotionEvent.ACTION_MOVE) {
+	@Override
+	public boolean onDown(MotionEvent event) {
 
-			if (event.getAction() == MotionEvent.ACTION_MOVE && previousX > 0
-					&& previousY > 0) {
-
-				float deltaX = (x - previousX) / 6f;
-				float deltaY = (y - previousY) / 6f;
-
-				//System.out.println("rotate: " + deltaX + "," + deltaY);
-				cube.rotate(deltaX, deltaY);
-
-			}
-
-			previousX = x;
-			previousY = y;
-		}
-		
-		if( event.getAction() == MotionEvent.ACTION_UP ) {
-			if( (event.getEventTime() - lastClick ) < 300 ){
-				//if( Math.abs(x-previousX) < 2 && Math.abs(y-previousY) < 2 ) {
-					cube.rotateDemo();
-				//}
-			}
-			lastClick = event.getEventTime();
-			
-			if( y < 100 ) {
-				cube.shuffle();
-			}
-		}
+		lastClick = System.currentTimeMillis();
+		unprocessedX = 0;
+		unprocessedY = 0;
 		return true;
 	}
-
+	
 	@Override
-	public boolean onDown(MotionEvent arg0) {
-		cube.rotateDemo();
-		return false;
+	public boolean onScroll(MotionEvent event1, MotionEvent event2, float dx,
+			float dy) {
+		// allow fling a chance to handle
+		if( System.currentTimeMillis() - lastClick < 200 ) {
+			unprocessedX += dx;
+			unprocessedY += dy;
+			return false;
+		}
+	
+		System.out.println("onScroll");
+		cube.rotate(-(dx+unprocessedX) / 6f, -(dy+unprocessedY) / 6f);
+		unprocessedX = 0;
+		unprocessedY = 0;	
+		return true;
 	}
-
+	
 	@Override
-	public boolean onFling(MotionEvent arg0, MotionEvent arg1, float arg2,
-			float arg3) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean onFling(MotionEvent e1, MotionEvent e2, float vx,
+			float vy) {
+		System.out.println("OnFling");
+		
+		//	Check intersected cubes along the swipe line		
+		float[] projectionM = gl.getCurrentProjection();
+		int CHECKNUM = 5;
+		float dx = (e2.getX()-e1.getX())/CHECKNUM;
+		float dy = (e2.getX()-e1.getX())/CHECKNUM;
+		float x = e1.getX();
+		float y = e2.getY();
+		
+
+		//	Get first and last hit
+		Vect3D[] hitP = new Vect3D[CHECKNUM];
+		int hitCount=0;
+		for(int i=0;i<CHECKNUM;i++) {
+			Vect3D p = cube.intersect(gl.getViewportWidth(), gl.getViewportHeight(), x, y, projectionM);
+
+			if( p != null ) {
+				hitP[hitCount++] = p;
+				System.out.println("Hit: " + p);
+			}
+			x += dx;
+			y += dy;
+		}
+		if( hitCount < 2)
+			return false;
+		cube.rotate(hitP[0],hitP[hitCount-1]);
+		return true;
 	}
 
 	@Override
 	public void onLongPress(MotionEvent arg0) {
 		// TODO Auto-generated method stub
-		
+		System.out.println("onLongPress");
+
 	}
 
-	@Override
-	public boolean onScroll(MotionEvent event1, MotionEvent event2, float dx,
-			float dy) {
-		return false;
-	}
+
 
 	@Override
 	public void onShowPress(MotionEvent arg0) {
 		// TODO Auto-generated method stub
-		
+		System.out.println("onShowPress");
 	}
 
 	@Override
-	public boolean onSingleTapUp(MotionEvent arg0) {
-
-		return false;
-	}
-	
-	public void getSelection(float touchX,float touchY) {
+	public boolean onSingleTapUp(MotionEvent event) {
+		System.out.println("onSingleTapUp");
+		float x = event.getX();
+		float y = event.getY();
+//		if (event.getY() < 100) {
+//			cube.shuffle();
+//		}
+		System.out.println("hit: " + cube.intersect(gl.getViewportWidth(), 
+				gl.getViewportHeight(),x,y, gl.getCurrentProjection()));
 		
+		return true;
 	}
-	
-	public Vertex getWorldCoords(float touchX,float touchY) {
-		// Initialize auxiliary variables.
 
-		// SCREEN height & width (ej: 320 x 480)
-		float screenW = mainView.getWidth();
-		float screenH = mainView.getHeight();
+	public void getSelection(float touchX, float touchY) {
 
-		// Auxiliary matrix and vectors
-		// to deal with ogl.
-		float[] invertedMatrix, transformMatrix, normalizedInPoint, outPoint;
-		invertedMatrix = new float[16];
-		transformMatrix = new float[16];
-		normalizedInPoint = new float[4];
-		outPoint = new float[4];
-
-		// Invert y coordinate, as android uses
-		// top-left, and ogl bottom-left.
-		int oglTouchY = (int) (screenH - touchY);
-
-		/*
-		 * Transform the screen point to clip space in ogl (-1,1)
-		 */
-		normalizedInPoint[0] = (float) ((touchX) * 2.0f / screenW - 1.0);
-		normalizedInPoint[1] = (float) ((oglTouchY) * 2.0f / screenH - 1.0);
-		normalizedInPoint[2] = -1.0f;
-		normalizedInPoint[3] = 1.0f;
-
-		/*
-		 * Obtain the transform matrix and then the inverse.
-		 */
-
-
-		Matrix.multiplyMM(transformMatrix, 0, getCurrentProjection(gl), 0,
-				getCurrentModelView(gl), 0);
-		Matrix.invertM(invertedMatrix, 0, transformMatrix, 0);
-
-		/*
-		 * Apply the inverse to the point in clip space
-		 */
-		Matrix.multiplyMV(outPoint, 0, invertedMatrix, 0, normalizedInPoint, 0);
-
-		if (outPoint[3] == 0.0) {
-			// Avoid /0 error.
-			//Log.e("World coords", "ERROR!");
-			return null;
-		}
-
-		// Divide by the 3rd component to find
-		// out the real position.
-		return new Vertex(outPoint[0] / outPoint[3], outPoint[1] / outPoint[3],outPoint[2]/outPoint[3]);
 	}
-	
-	/**
-	    * Record the current modelView matrix
-	    * state. Has the side effect of
-	    * setting the current matrix state
-	    * to GL_MODELVIEW
-	    * @param gl context
-	    */
-	   public float[] getCurrentModelView(GL10 gl)
-	   {
-	        float[] mModelView = new float[16];
-	        getMatrix(gl, GL10.GL_MODELVIEW, mModelView);
-	        return mModelView;
-	   }
-	 
-	   /**
-	    * Record the current projection matrix
-	    * state. Has the side effect of
-	    * setting the current matrix state
-	    * to GL_PROJECTION
-	    * @param gl context
-	    */
-	   public float[] getCurrentProjection(GL10 gl)
-	   {
-	       float[] mProjection = new float[16];
-	       getMatrix(gl, GL10.GL_PROJECTION, mProjection);
-	       return mProjection;
-	   }
-	 
-	   /**
-	    * Fetches a specific matrix from opengl
-	    * @param gl context
-	    * @param mode of the matrix
-	    * @param mat initialized float[16] array
-	    * to fill with the matrix
-	    */
-	   private void getMatrix(GL10 gl, int mode, float[] mat)
-	   {
-	       MatrixTrackingGL gl2 = (MatrixTrackingGL) gl;
-	       gl2.glMatrixMode(mode);
-	       gl2.getMatrix(mat, 0);
-	   }
 
 	@Override
 	public GL wrap(GL gl) {
 		this.gl = new MatrixTrackingGL(gl);
 		return this.gl;
-	}	
+	}
 }

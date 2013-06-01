@@ -56,6 +56,8 @@ public class MatrixTrackingGL implements GL, GL10, GL10Ext, GL11, GL11Ext {
     FloatBuffer mFloatBuffer;
     float[] mCheckA;
     float[] mCheckB;
+    
+    int viewportX,viewportY,viewportWidth,viewportHeight;
 
     public MatrixTrackingGL(GL gl) {
         mgl = (GL10) gl;
@@ -667,6 +669,10 @@ public class MatrixTrackingGL implements GL, GL10, GL10Ext, GL11, GL11Ext {
     }
 
     public void glViewport(int x, int y, int width, int height) {
+    	viewportX = x;
+    	viewportY = y;
+    	viewportWidth = width;
+    	viewportHeight = height;
         mgl.glViewport(x, y, width, height);
     }
 
@@ -1108,6 +1114,22 @@ public class MatrixTrackingGL implements GL, GL10, GL10Ext, GL11, GL11Ext {
 	private void getMatrix( int mode, float[] mat) {
 		glMatrixMode(mode);
 		getMatrix(mat, 0);
+	}
+
+	public int getViewportX() {
+		return viewportX;
+	}
+
+	public int getViewportY() {
+		return viewportY;
+	}
+
+	public int getViewportWidth() {
+		return viewportWidth;
+	}
+
+	public int getViewportHeight() {
+		return viewportHeight;
 	}
 	    
 
