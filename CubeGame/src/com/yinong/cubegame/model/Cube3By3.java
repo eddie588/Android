@@ -11,6 +11,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import android.opengl.Matrix;
 
+import com.yinong.cubegame.util.GLColor;
 import com.yinong.cubegame.util.Ray;
 import com.yinong.cubegame.util.Vect3D;
 
@@ -36,8 +37,9 @@ public class Cube3By3 {
     private long lastUpdate = 0;
     
     private Vertex position;
-    
-    private float NO_INTERSECT = 1000000f;
+
+    private static float EPSILON = 0.00001f;
+   
 	
 	public Cube3By3(float x,float y,float z) {
 		position = new Vertex(x,y,z);
@@ -57,7 +59,7 @@ public class Cube3By3 {
 		Matrix.setIdentityM(accumulatedRotation,0);
 		Matrix.setIdentityM(currentRotation,0);	
 		
-		Matrix.rotateM(accumulatedRotation,0,45f,1f,1f,1f);
+		//Matrix.rotateM(accumulatedRotation,0,45f,1f,1f,1f);
 		
         ByteBuffer byteBuf = ByteBuffer.allocateDirect(accumulatedRotation.length * 4);
         byteBuf.order(ByteOrder.nativeOrder());
@@ -72,9 +74,11 @@ public class Cube3By3 {
 	
 	public synchronized void draw(GL10 gl) {
 		gl.glMatrixMode(gl.GL_MODELVIEW);
+
 		gl.glLoadIdentity();
+
 		gl.glTranslatef(position.x, position.y, position.z);		
-		gl.glMultMatrixf(matrixBuffer);		
+		gl.glMultMatrixf(matrixBuffer);
 		for (int i = 0; i < 27; i++) {
 			if( cubes[i] != null )
 				cubes[i].draw(gl);
@@ -89,7 +93,7 @@ public class Cube3By3 {
 			float z = 0;
 			z = (face==FACE_FRONT)? cubeSize :((face==FACE_BACK)?-cubeSize:0);
 			for(int i=0;i<27;i++) {
-				if ( Math.abs(cubes[i].getCenter().z - z) < 0.0001 )
+				if ( Math.abs(cubes[i].getCenter().z - z) < EPSILON )
 					list.add(cubes[i]);
 			}
 		}
@@ -98,7 +102,7 @@ public class Cube3By3 {
 			float x = 0;
 			x = (face==FACE_RIGHT)? cubeSize :((face==FACE_LEFT)?-cubeSize:0);
 			for(int i=0;i<27;i++) {
-				if ( Math.abs(cubes[i].getCenter().x - x) < 0.0001 )
+				if ( Math.abs(cubes[i].getCenter().x - x) < EPSILON )
 					list.add(cubes[i]);
 			}
 		}
@@ -107,7 +111,7 @@ public class Cube3By3 {
 			float y = 0;
 			y = (face==FACE_UP)? cubeSize :((face==FACE_DOWN)?-cubeSize:0);
 			for(int i=0;i<27;i++) {
-				if ( Math.abs(cubes[i].getCenter().y - y) < 0.0001 )
+				if ( Math.abs(cubes[i].getCenter().y - y) < EPSILON )
 					list.add(cubes[i]);
 			}
 		}	
@@ -181,14 +185,9 @@ public class Cube3By3 {
 		shuffle = 20;
 	}
 	
-	public void onClick(int width,int height,float x,float y,float[] projectionM,float[]modelViewM) {
-		float[] inV=new float[4];
-		float[] outV=new float[4];
-		float[] tmpM = new float[16];
-
-		Ray ray = new Ray(width,height,x,y,projectionM,modelViewM);
+	public Cube intersect(int width,int height,float x,float y,float[] projectionM,float[]modelViewM) {
+		Ray ray = new Ray(width,height,x,y,projectionM,null);
 		
-		float cloestT = 1000f;
 		int cloestIndex = -1;
 
 		float[] tempM = new float[16];
@@ -197,23 +196,36 @@ public class Cube3By3 {
 		Matrix.translateM(tempM, 0, position.x, position.y, position.z);
 		Matrix.multiplyMM(convM, 0, tempM, 0, accumulatedRotation, 0);
 		
+		Vect3D hit = null;
+		Vect3D hitP=null;
+		
 		for(int i=0;i<27;i++) {
-			float t = intersectCube(ray,cubes[i].getTriangles(),convM);
-			if( t <  cloestT ) {
-				cloestT = t;
-				cloestIndex = i;
+			Vect3D ret= intersectCube(ray,cubes[i].getTriangles(),convM);
+			if( ret != null ) {
+				if( hit == null || ret.x < hit.x ) {
+					cloestIndex = i;
+					hit = ret;
+					hitP = ray.getIntersectCoord(ret);
+				}
 			}
 		}
 		
-		if(cloestIndex >=0 )
+		if( hit != null  ) {
 			System.out.println("closes hit: " + cubes[cloestIndex].getCenter());
+			System.out.println("index: " + cloestIndex);
+			
+
+			return cubes[cloestIndex];
+		}
+		return null;
 	}
 	
-	float intersectCube(Ray ray,Triangle[] triangles,float[] convM) {
+	Vect3D intersectCube(Ray ray,Triangle[] triangles,float[] convM) {
 		float[] inV=new float[4];
 		float[] outV=new float[4];
-		float closestT = NO_INTERSECT;
 
+
+		Vect3D hit=null;
 		
 		for(int i=0;i<triangles.length;i++) {
 			// V1
@@ -254,13 +266,13 @@ public class Cube3By3 {
 			
 			Vect3D ret = ray.intersectTriangle(triangles[i].v1, triangles[i].v2, triangles[i].v3);
 			
-			if( ret != null ) {
-				if ( ret.x < closestT) {
-					closestT = ret.x;
-				}
-			}
 			
+			if( ret != null ) {
+				System.out.println("hit: " + ray.getIntersectCoord(ret) + " t = " + ret.x);
+				if( hit == null || ret.x < hit.x ) 
+					hit = ret;
+			}
 		}
-		return closestT;
+		return hit;
 	}
 }

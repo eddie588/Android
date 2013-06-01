@@ -9,9 +9,9 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.yinong.cubegame.model.Cube;
 import com.yinong.cubegame.model.Cube3By3;
 import com.yinong.cubegame.model.Vertex;
-import com.yinong.cubegame.util.*;
 
 public class GameController  implements GestureDetector.OnGestureListener,GLSurfaceView.GLWrapper{
 	GestureDetector gestureDetector;	
@@ -44,7 +44,8 @@ public class GameController  implements GestureDetector.OnGestureListener,GLSurf
 			previousX = x;
 			previousY = y;
 
-			cube.onClick(mainView.getWidth(),mainView.getHeight(),x,y,gl.getCurrentProjection(),gl.getCurrentModelView());
+			Cube hitCube = cube.intersect(mainView.getWidth(),mainView.getHeight(),x,y,gl.getCurrentProjection(),gl.getCurrentModelView());
+			
 		}
 		if (event.getAction() == MotionEvent.ACTION_MOVE) {
 

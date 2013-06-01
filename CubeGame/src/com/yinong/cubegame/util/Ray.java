@@ -10,8 +10,8 @@ import android.opengl.Matrix;
 import com.yinong.cubegame.model.Vertex;
 
 public class Ray {
-	Vect3D near;
-	Vect3D far;
+	Vect3D near = new Vect3D();
+	Vect3D far = new Vect3D();
 
 	Vect3D edge1 = new Vect3D();
 	Vect3D edge2 = new Vect3D();
@@ -50,9 +50,10 @@ public class Ray {
 
 		Matrix.setIdentityM(identityM, 0);
 
-		modelViewM = identityM;
-		printM(projectionM);
-		printM(modelViewM);
+		if( modelViewM == null)
+			modelViewM = identityM;
+//		printM(projectionM);
+//		printM(modelViewM);
 
 		int result = GLU.gluUnProject(winx, winy, 0f, modelViewM, 0,
 				projectionM, 0,
@@ -123,6 +124,12 @@ public class Ray {
 					+ fmt.format(matrix[i + 8]) + " "
 					+ fmt.format(matrix[i + 12]));
 		}
+	}
+	
+	public Vect3D getIntersectCoord(Vect3D intersectRet) {
+		Vect3D p = new Vect3D(intersectRet.x,direction);
+		p.add(near);
+		return p;
 	}
 
 	public Vect3D intersectTriangle(Vect3D v0, Vect3D v1, Vect3D v2) {

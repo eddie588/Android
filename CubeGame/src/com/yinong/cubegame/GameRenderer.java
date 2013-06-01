@@ -5,7 +5,6 @@ import javax.microedition.khronos.opengles.GL10;
 
 import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLU;
-import android.opengl.Matrix;
 import android.view.View;
 
 import com.yinong.cubegame.model.Cube3By3;
@@ -38,8 +37,7 @@ public class GameRenderer implements Renderer {
 	@Override
 	public void onDrawFrame(GL10 gl) {
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
-
-		//gl.glMatrixMode(gl.GL_PROJECTION);
+        gl.glFrontFace(GL10.GL_CW);
 		cube.update();
 		cube.draw(gl);
 	}
@@ -59,6 +57,4 @@ public class GameRenderer implements Renderer {
 		gl.glMatrixMode(GL10.GL_MODELVIEW);
 		gl.glLoadIdentity();
 	}
-	
-	
 }

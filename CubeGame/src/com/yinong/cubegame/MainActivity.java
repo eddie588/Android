@@ -26,7 +26,8 @@ public class MainActivity extends Activity  {
 		cube = new Cube3By3(0f,0f,-10f);
 		
 		glView = new GLSurfaceView(getApplicationContext());
-		glView.setRenderer(new GameRenderer(glView,cube));
+		GameRenderer renderer = new GameRenderer(glView,cube);
+		glView.setRenderer(renderer);
 
 		setContentView(glView);
 	

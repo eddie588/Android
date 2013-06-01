@@ -110,8 +110,6 @@ public class Cube {
 	    }
 
 	    public void draw(GL10 gl) {             
-	            gl.glFrontFace(GL10.GL_CW);
-	
 	            gl.glVertexPointer(3, GL10.GL_FLOAT, 0, mVertexBuffer);
 	            gl.glColorPointer(4, GL10.GL_FLOAT, 0, mColorBuffer);
 	            
@@ -164,12 +162,13 @@ public class Cube {
 	    
 	    public Triangle[] getTriangles() {
 	    	Triangle[] triangle = new Triangle[indices.length/3];
-	    	for(int i=0;i<indices.length;i++) {
-	    		triangle[i] = new Triangle(
+	    	for(int i=0;i<indices.length;i+=3) {
+	    		triangle[i/3] = new Triangle(
 	    			new Vect3D(verticesTemplate[indices[i]*3],verticesTemplate[indices[i]*3+1],verticesTemplate[indices[i]*3+2]),
 	    			new Vect3D(verticesTemplate[indices[i+1]*3],verticesTemplate[indices[i+1]*3+1],verticesTemplate[indices[i+1]*3+2]),
 	    			new Vect3D(verticesTemplate[indices[i+2]*3],verticesTemplate[indices[i+2]*3+1],verticesTemplate[indices[i+2]*3+2])
 	    		);
+//	    		System.out.println(triangle[i/3].v1 + " - " + triangle[i/3].v2 + " - " + triangle[i/3].v3 );
 	    	}
 	    	return triangle;
 	    }
