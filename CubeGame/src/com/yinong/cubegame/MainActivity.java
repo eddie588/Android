@@ -8,10 +8,11 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.yinong.cubegame.model.Cube3By3;
+import com.yinong.cubegame.model.CubeWorld;
 
 public class MainActivity extends Activity  {
 	GLSurfaceView glView;
-	Cube3By3      cube;
+	CubeWorld      cubeWorld;
 	GameController controller;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -23,13 +24,14 @@ public class MainActivity extends Activity  {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);	
 		
-		cube = new Cube3By3(0f,0f,-10f);
-		controller = new GameController(cube);
+		cubeWorld = new CubeWorld();
+		controller = new GameController(cubeWorld);
 		glView = new MainView(getApplicationContext(),controller);
-		GameRenderer renderer = new GameRenderer(glView,cube);
+		GameRenderer renderer = new GameRenderer(glView,cubeWorld);
 		glView.setRenderer(renderer);
 
 		setContentView(glView);
+		controller.setRenderer(renderer);
 	
 
 		glView.setGLWrapper(controller);  

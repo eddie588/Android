@@ -7,16 +7,23 @@ import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 
 import com.yinong.cubegame.model.Cube3By3;
+import com.yinong.cubegame.model.CubeWorld;
 import com.yinong.cubegame.util.Vect3D;
 
 public class GameController implements OnGestureListener,
 		GLSurfaceView.GLWrapper {
-	final Cube3By3 cube;
+	final CubeWorld cubeWorld;
 	MatrixTrackingGL gl;
-	
+	GameRenderer renderer;
 
-	public GameController(Cube3By3 cube) {
-		this.cube = cube;
+
+	public GameController(CubeWorld cubeWorld) {
+		this.cubeWorld = cubeWorld;
+
+	}
+	
+	void setRenderer(GameRenderer renderer) {
+		this.renderer = renderer;
 	}
 	
 	
@@ -49,7 +56,7 @@ public class GameController implements OnGestureListener,
 		}
 	
 		System.out.println("onScroll");
-		cube.rotate(-(dx+unprocessedX) / 6f, -(dy+unprocessedY) / 6f);
+		cubeWorld.rotate(-(dx+unprocessedX) / 6f, -(dy+unprocessedY) / 6f);
 		unprocessedX = 0;
 		unprocessedY = 0;	
 		return true;
@@ -73,7 +80,7 @@ public class GameController implements OnGestureListener,
 		Vect3D[] hitP = new Vect3D[CHECKNUM];
 		int hitCount=0;
 		for(int i=0;i<CHECKNUM;i++) {
-			Vect3D p = cube.intersect(gl.getViewportWidth(), gl.getViewportHeight(), x, y, projectionM);
+			Vect3D p = cubeWorld.intersect(gl.getViewportWidth(), gl.getViewportHeight(), x, y, projectionM);
 
 			if( p != null ) {
 				hitP[hitCount++] = p;
@@ -84,7 +91,7 @@ public class GameController implements OnGestureListener,
 		}
 		if( hitCount < 2)
 			return false;
-		cube.rotate(hitP[0],hitP[hitCount-1]);
+		cubeWorld.turnFace(hitP[0],hitP[hitCount-1]);
 		return true;
 	}
 
@@ -109,10 +116,13 @@ public class GameController implements OnGestureListener,
 		System.out.println("onSingleTapUp");
 		float x = event.getX();
 		float y = event.getY();
-		if (event.getY() < 100) {
-			cube.shuffle(20);
+		if (y < 100) {
+			cubeWorld.shuffle(20);
 		}
-		System.out.println("hit: " + cube.intersect(gl.getViewportWidth(), 
+//		else if (y > gl.viewportWidth - 100) {
+//			renderer.toggleLight();
+//		}
+		System.out.println("hit: " + cubeWorld.intersect(gl.getViewportWidth(), 
 				gl.getViewportHeight(),x,y, gl.getCurrentProjection()));
 		
 		return true;
