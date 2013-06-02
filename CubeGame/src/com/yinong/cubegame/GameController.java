@@ -119,9 +119,9 @@ public class GameController implements OnGestureListener,
 		if (y < 100) {
 			cubeWorld.shuffle(20);
 		}
-//		else if (y > gl.viewportWidth - 100) {
-//			renderer.toggleLight();
-//		}
+		else if (y > gl.viewportWidth - 100) {
+			renderer.toggleLight();
+		}
 		System.out.println("hit: " + cubeWorld.intersect(gl.getViewportWidth(), 
 				gl.getViewportHeight(),x,y, gl.getCurrentProjection()));
 		

@@ -7,7 +7,7 @@ import java.util.Random;
 
 import com.yinong.cubegame.util.Vect3D;
 
-public class Cube2By2 implements CubeGame {
+public class Cube2By2 extends CubeGame {
 	Cube[] cubes;
 
 	private float cubeSize = 1f;
@@ -38,32 +38,6 @@ public class Cube2By2 implements CubeGame {
 		// controller = new GameController(view,cube);
 	}
 	
-	private void setupColors() {
-		
-		for(Cube cube:getCubes(FACE_FRONT)) {
-			cube.setColor(Cube.CUBE_FRONT,1f,0f,0f,1f);
-		}
-		
-		for(Cube cube:getCubes(FACE_BACK)) {
-			cube.setColor(Cube.CUBE_BACK,1f,1f,0f,1f);
-		}
-		
-		for(Cube cube:getCubes(FACE_LEFT)) {
-			cube.setColor(Cube.CUBE_LEFT,0f,0f,1f,1f);
-		}
-		
-		for(Cube cube:getCubes(FACE_RIGHT)) {
-			cube.setColor(Cube.CUBE_RIGHT,0f,1f,0f,1f);
-		}
-		
-		for(Cube cube:getCubes(FACE_TOP)) {
-			cube.setColor(Cube.CUBE_TOP,0,1f,1f,1f);
-		}
-		
-		for(Cube cube:getCubes(FACE_BOTTOM)) {
-			cube.setColor(Cube.CUBE_BOTTOM,1f,0f,1f,1f);
-		}		
-	}
 
 	@Override
 	public Vect3D getPosition() {

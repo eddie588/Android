@@ -35,9 +35,12 @@ public class CubeWorld {
 	float[] currentRotation = new float[16];
 	private FloatBuffer matrixBuffer;
 	
+	long startTime = 0;
+	
 	public CubeWorld(Context context) {
 //		game = new Cube3By3(this,0f,0f,-11f);				
-		game = new Cube2By2(this,0f,0f,-8f);
+//		game = new Cube2By2(this,0f,0f,-8f);
+		game = new Cube4By4(this,0f,0f,-13f);
 		
 		Matrix.setIdentityM(accumulatedRotation, 0);
 		Matrix.setIdentityM(currentRotation, 0);
@@ -211,12 +214,29 @@ public class CubeWorld {
 
 
 			for (Cube cube : list) {
-				if (currentFace == CubeGame.FACE_FRONT || currentFace == CubeGame.FACE_SIDE || currentFace == CubeGame.FACE_BACK)
+				switch(currentFace) {
+				case CubeGame.FACE_FRONT:
+				case CubeGame.FACE_SIDE:
+				case CubeGame.FACE_SIDE1:
+				case CubeGame.FACE_SIDE2:
+				case CubeGame.FACE_BACK:
 					cube.rotate(angle, 0f, 0f, -1f);
-				if (currentFace == CubeGame.FACE_LEFT || currentFace == CubeGame.FACE_MIDDLE || currentFace == CubeGame.FACE_RIGHT)
+					break;
+				case CubeGame.FACE_LEFT:
+				case CubeGame.FACE_RIGHT:
+				case CubeGame.FACE_MIDDLE:
+				case CubeGame.FACE_MIDDLE1:
+				case CubeGame.FACE_MIDDLE2:
 					cube.rotate(angle, -1f, 0f, 0f);
-				if (currentFace == CubeGame.FACE_TOP || currentFace == CubeGame.FACE_EQUATOR || currentFace == CubeGame.FACE_BOTTOM)
+					break;
+				case CubeGame.FACE_TOP:
+				case CubeGame.FACE_BOTTOM:
+				case CubeGame.FACE_EQUATOR:
+				case CubeGame.FACE_EQUATOR1:
+				case CubeGame.FACE_EQUATOR2:
 					cube.rotate(angle, 0f, -1f, 0f);
+					break;
+				}
 			}			
 			return;
 		}
