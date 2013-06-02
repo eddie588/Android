@@ -25,7 +25,6 @@ public class CubeWorld {
 	private AudioManager  mAudioManager;
 	private HashMap<Integer, Integer> mSoundPoolMap;
 	private SoundPool soundPool;
-	private int mStream1 = 0;
 	private boolean enableSound = true;
 	
 	private CubeGame game = null;
@@ -33,14 +32,16 @@ public class CubeWorld {
 
 	float[] accumulatedRotation = new float[16];
 	float[] currentRotation = new float[16];
+	float[] projectionM = null;
 	private FloatBuffer matrixBuffer;
 	
 	long startTime = 0;
 	
 	public CubeWorld(Context context) {
-//		game = new Cube3By3(this,0f,0f,-11f);				
+		game = new Cube3By3(this,0f,0f,-11f);				
 //		game = new Cube2By2(this,0f,0f,-8f);
-		game = new Cube4By4(this,0f,0f,-13f);
+//		game = new Cube4By4(this,0f,0f,-13f);
+//		game = new Cube224(this,0f,0f,-13f);
 		
 		Matrix.setIdentityM(accumulatedRotation, 0);
 		Matrix.setIdentityM(currentRotation, 0);
@@ -82,8 +83,7 @@ public class CubeWorld {
 		matrixBuffer.position(0);
 	}
 
-	public Vect3D intersect(int width, int height, float x, float y,
-			float[] projectionM) {
+	public Vect3D intersect(int width, int height, float x, float y) {
 
 		int cloestIndex = -1;
 
@@ -149,8 +149,8 @@ public class CubeWorld {
 		game.turnFace(p1,p2);
 	}
 	
-	public void requestTurnFace(int face,int angle) {
-		rotateRequests.add(new TurnRequest(face,angle));		
+	public void requestTurnFace(int plane,float centerP,float angle) {
+		rotateRequests.add(new TurnRequest(plane,centerP,angle));		
 	}
 
 	public void shuffle(int count) {
@@ -178,7 +178,7 @@ public class CubeWorld {
 				streamVolume, 1, 0, 1f);
 	}
 	
-	private int currentFace = 0;
+	private TurnRequest currentRequest = null;
 	private float remainingAngle=0;
 	private float ANIMATE_ANGLE = 22.5f;
 	
@@ -187,13 +187,13 @@ public class CubeWorld {
 			TurnRequest r = rotateRequests.remove();
 			
 			remainingAngle = r.angle;
-			currentFace = r.face;
+			currentRequest = r;
 			playClickingSound();
 		}
 		
 		if( remainingAngle != 0 ) {
 			//	keep rotating current layer
-			List<Cube> list = game.getCubes(currentFace);
+			List<Cube> list = game.getCubes(currentRequest.plane,currentRequest.centerP);
 			
 			float angle;
 			
@@ -214,26 +214,14 @@ public class CubeWorld {
 
 
 			for (Cube cube : list) {
-				switch(currentFace) {
-				case CubeGame.FACE_FRONT:
-				case CubeGame.FACE_SIDE:
-				case CubeGame.FACE_SIDE1:
-				case CubeGame.FACE_SIDE2:
-				case CubeGame.FACE_BACK:
+				switch(currentRequest.plane) {
+				case CubeGame.PLANE_Z:
 					cube.rotate(angle, 0f, 0f, -1f);
 					break;
-				case CubeGame.FACE_LEFT:
-				case CubeGame.FACE_RIGHT:
-				case CubeGame.FACE_MIDDLE:
-				case CubeGame.FACE_MIDDLE1:
-				case CubeGame.FACE_MIDDLE2:
+				case CubeGame.PLANE_X:
 					cube.rotate(angle, -1f, 0f, 0f);
 					break;
-				case CubeGame.FACE_TOP:
-				case CubeGame.FACE_BOTTOM:
-				case CubeGame.FACE_EQUATOR:
-				case CubeGame.FACE_EQUATOR1:
-				case CubeGame.FACE_EQUATOR2:
+				case CubeGame.PLANE_Y:
 					cube.rotate(angle, 0f, -1f, 0f);
 					break;
 				}
@@ -258,11 +246,18 @@ public class CubeWorld {
 
 	
 	class TurnRequest {
-		int angle;
-		int face;
-		public TurnRequest(int face,int angle) {
-			this.face = face;
+		float angle;
+		int  plane;
+		float centerP;
+		public TurnRequest(int plane,float centerP,float angle) {
+			this.plane = plane;
+			this.centerP = centerP;
 			this.angle = angle;
 		}
+	}
+
+
+	public void setProjectionM(float[] currentProjection) {
+		projectionM = currentProjection;
 	}	
 }

@@ -1,5 +1,6 @@
 package com.yinong.cubegame.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.yinong.cubegame.util.Vect3D;
@@ -7,23 +8,23 @@ import com.yinong.cubegame.util.Vect3D;
 public abstract class CubeGame {
 	public static float EPSILON = 0.00001f;
 	
+	public static final int PLANE_X = 0;
+	public static final int PLANE_Y = 1;
+	public static final int PLANE_Z = 2;
+	
 	public static final int FACE_FRONT = 0;
 	public static final int FACE_BACK = 1;
-	public static final int FACE_SIDE = 2;
-	public static final int FACE_TOP = 3;
-	public static final int FACE_BOTTOM = 4;
-	public static final int FACE_EQUATOR = 5;
-	public static final int FACE_LEFT = 6;
-	public static final int FACE_RIGHT = 7;
-	public static final int FACE_MIDDLE = 8;
+
+	public static final int FACE_TOP = 2;
+	public static final int FACE_BOTTOM = 3;
+
+	public static final int FACE_LEFT = 4;
+	public static final int FACE_RIGHT = 5;
+
 	
-	//	for 4X4
-	public static final int FACE_MIDDLE1 = 9;
-	public static final int FACE_MIDDLE2 = 10;
-	public static final int FACE_EQUATOR1 = 11;
-	public static final int FACE_EQUATOR2 = 12;
-	public static final int FACE_SIDE1 = 13;
-	public static final int FACE_SIDE2 = 14;
+	protected float cubeSize = 1f;
+	protected float cubeMargin = 0.05f;
+	
 	
 	public abstract void turnFace(Vect3D p1, Vect3D p2);
 
@@ -37,27 +38,73 @@ public abstract class CubeGame {
 	
 	protected void setupColors() {
 		for(Cube cube:getCubes(FACE_FRONT)) {
-			cube.setColor(Cube.CUBE_FRONT,0.75f,0f,0f,1f);
+			cube.setColor(Cube.CUBE_FRONT,0.75f,0f,0f,1f); // RED
 		}
 		
 		for(Cube cube:getCubes(FACE_BACK)) {
-			cube.setColor(Cube.CUBE_BACK,1f,1f,0f,1f);
+			cube.setColor(Cube.CUBE_BACK,1,0.5f,0f,0f);   // ORANGE			
 		}
 		
 		for(Cube cube:getCubes(FACE_LEFT)) {
-			cube.setColor(Cube.CUBE_LEFT,0f,0f,1f,1f);
+			cube.setColor(Cube.CUBE_LEFT,1f,1f,1f,1f);	// WHITE
 		}
 		
 		for(Cube cube:getCubes(FACE_RIGHT)) {
-			cube.setColor(Cube.CUBE_RIGHT,0f,0.75f,0f,1f);
+			cube.setColor(Cube.CUBE_RIGHT,1f,1f,0f,1f);  // YELLOW
 		}
 		
 		for(Cube cube:getCubes(FACE_TOP)) {
-			cube.setColor(Cube.CUBE_TOP,1,0.5f,0f,0f);
+			cube.setColor(Cube.CUBE_TOP,0f,0f,1f,1f);	// BLUE
 		}
 		
 		for(Cube cube:getCubes(FACE_BOTTOM)) {
-			cube.setColor(Cube.CUBE_BOTTOM,1f,1f,1f,1f);
+			cube.setColor(Cube.CUBE_BOTTOM,0f,0.75f,0f,1f);  // GREEN
 		}			
 	}	
+	
+	public List<Cube> getCubes(int plane,float centerP) {
+		List<Cube> cubes = new ArrayList<Cube>();
+		for(Cube cube:getAllCubes()) {
+			switch(plane) {
+			case PLANE_X:
+				if( Math.abs(cube.getCenter().x-centerP) < EPSILON )
+					cubes.add(cube);
+				break;
+			case PLANE_Y:
+				if( Math.abs(cube.getCenter().y-centerP) < EPSILON )
+					cubes.add(cube);
+				break;
+			case PLANE_Z:
+				if( Math.abs(cube.getCenter().z-centerP) < EPSILON )
+					cubes.add(cube);
+				break;			
+			}
+		}
+		return cubes;
+	}
+	
+	public boolean isValidTurn(int plane,float centerP,float angle) {
+		return true;
+	}
+	
+	public boolean isSwipeOnFrontBack(Vect3D p1,Vect3D p2,float unitsFromCenter) {
+		return (Math.abs(p1.z - unitsFromCenter* cubeSize+0.5*cubeMargin) < EPSILON && Math.abs(p2.z - unitsFromCenter
+				* cubeSize+0.5*cubeMargin) < EPSILON )
+				|| ((Math.abs(p1.z + unitsFromCenter * cubeSize-0.5*cubeMargin) < EPSILON && Math.abs(p2.z
+						+ unitsFromCenter * cubeSize - 0.5*cubeMargin) < EPSILON ));
+	}
+	
+	public boolean isSwipeOnLeftRight(Vect3D p1,Vect3D p2,float unitsFromCenter) {
+		return (Math.abs(p1.x - unitsFromCenter* cubeSize+0.5*cubeMargin) < EPSILON && Math.abs(p2.x - unitsFromCenter
+				* cubeSize+0.5*cubeMargin) < EPSILON )
+				|| ((Math.abs(p1.x + unitsFromCenter * cubeSize-0.5*cubeMargin) < EPSILON && Math.abs(p2.x
+						+ unitsFromCenter * cubeSize - 0.5*cubeMargin) < EPSILON ));
+	}	
+	
+	boolean isSwipeOnTopBottom(Vect3D p1,Vect3D p2,float unitsFromCenter) {
+		return (Math.abs(p1.y - unitsFromCenter* cubeSize+0.5*cubeMargin) < EPSILON && Math.abs(p2.y - unitsFromCenter
+				* cubeSize+0.5*cubeMargin) < EPSILON )
+				|| ((Math.abs(p1.y + unitsFromCenter * cubeSize-0.5*cubeMargin) < EPSILON && Math.abs(p2.y
+						+ unitsFromCenter * cubeSize - 0.5*cubeMargin) < EPSILON ));
+	}		
 }

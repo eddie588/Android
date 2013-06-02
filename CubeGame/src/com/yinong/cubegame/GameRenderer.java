@@ -11,7 +11,6 @@ import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLU;
 import android.view.View;
 
-import com.yinong.cubegame.model.Cube3By3;
 import com.yinong.cubegame.model.CubeWorld;
 
 public class GameRenderer implements Renderer {
@@ -105,6 +104,7 @@ public class GameRenderer implements Renderer {
 		GLU.gluPerspective(gl, 45f, (float) width / (float) height, 0.1f,
 				100.0f);
 		gl.glViewport(0, 0, width, height);
+		cubeWorld.setProjectionM(((MatrixTrackingGL)gl).getCurrentProjection());
 
 		gl.glMatrixMode(GL10.GL_MODELVIEW);
 		gl.glLoadIdentity();

@@ -10,9 +10,6 @@ import com.yinong.cubegame.util.Vect3D;
 public class Cube4By4 extends CubeGame {
 	Cube[] cubes;
 
-	private float cubeSize = 1f;
-	private float cubeMargin = 0.05f;
-
 	private Vect3D position;
 
 	private CubeWorld world;
@@ -28,8 +25,8 @@ public class Cube4By4 extends CubeGame {
 		for (cx = 0; cx < 4; cx++) {
 			for (cy = 0; cy < 4; cy++) {
 				for (cz = 0; cz <4; cz++) {
-					cubes[p++] = new Cube(cubeSize * cx-1-cubeSize/2, cubeSize * cy-1-cubeSize/2,
-							cubeSize * cz-1-cubeSize/2, cubeSize-cubeMargin);
+					cubes[p++] = new Cube(cubeSize * cx-1.5f* cubeSize, cubeSize * cy-1.5f*cubeSize,
+							cubeSize * cz-1.5f*cubeSize, cubeSize-cubeMargin);
 				}
 			}
 		}
@@ -46,100 +43,36 @@ public class Cube4By4 extends CubeGame {
 
 	@Override
 	public List<Cube> getCubes(int face) {
-
-		List<Cube> list = new ArrayList<Cube>();
-
-		if (face == FACE_FRONT || face == FACE_SIDE1 || face == FACE_SIDE2 || face == FACE_BACK) {
-			float z = 0;
-			switch( face ) {
-			case CubeGame.FACE_FRONT:
-				z = 1.5f*cubeSize;
-				break;
-			case CubeGame.FACE_SIDE1:
-				z = 0.5f*cubeSize;
-				break;
-			case CubeGame.FACE_SIDE2:
-				z = -0.5f*cubeSize;
-				break;
-			case CubeGame.FACE_BACK:
-				z = -1.5f*cubeSize;
-				break;
-			}
-
-			for (int i = 0; i < cubes.length; i++) {
-				if (Math.abs(cubes[i].getCenter().z - z) < EPSILON)
-					list.add(cubes[i]);
-			}
+		switch(face) {
+		case FACE_FRONT:
+			return getCubes(PLANE_Z,1.5f*cubeSize);
+		case FACE_BACK:
+			return getCubes(PLANE_Z,-1.5f*cubeSize);
+		case FACE_LEFT:
+			return getCubes(PLANE_X,-1.5f*cubeSize);
+		case FACE_RIGHT:
+			return getCubes(PLANE_X,1.5f*cubeSize);
+		case FACE_TOP:
+			return getCubes(PLANE_Y,1.5f*cubeSize);
+		case FACE_BOTTOM:
+			return getCubes(PLANE_Y,-1.5f*cubeSize);
 		}
-
-		if (face == FACE_LEFT || face == FACE_MIDDLE1 || face == FACE_MIDDLE2 || face == FACE_RIGHT) {
-			float x = 0;
-			switch( face ) {
-			case CubeGame.FACE_RIGHT:
-				x = 1.5f*cubeSize;
-				break;
-			case CubeGame.FACE_MIDDLE1:
-				x = 0.5f*cubeSize;
-				break;
-			case CubeGame.FACE_MIDDLE2:
-				x = -0.5f*cubeSize;
-				break;
-			case CubeGame.FACE_LEFT:
-				x = -1.5f*cubeSize;
-				break;
-			}
-			for (int i = 0; i < cubes.length; i++) {
-				if (Math.abs(cubes[i].getCenter().x - x) < EPSILON)
-					list.add(cubes[i]);
-			}
-		}
-
-		if (face == FACE_TOP || face == FACE_EQUATOR1 || face == FACE_EQUATOR2 || face == FACE_BOTTOM) {
-			float y = 0;
-			switch( face ) {
-			case CubeGame.FACE_TOP:
-				y = 1.5f*cubeSize;
-				break;
-			case CubeGame.FACE_EQUATOR1:
-				y = 0.5f*cubeSize;
-				break;
-			case CubeGame.FACE_EQUATOR2:
-				y = -0.5f*cubeSize;
-				break;
-			case CubeGame.FACE_BOTTOM:
-				y = -1.5f*cubeSize;
-				break;
-			}
-			for (int i = 0; i < cubes.length; i++) {
-				if (Math.abs(cubes[i].getCenter().y - y) < EPSILON)
-					list.add(cubes[i]);
-			}
-		}
-		return list;
+		return new ArrayList<Cube>();
 	}
 	
 
 	@Override
 	public void turnFace(Vect3D p1, Vect3D p2) {
 		// Swipe on front face
-		if ((Math.abs(p1.z - 2.0 * cubeSize+0.5*cubeMargin) < EPSILON && Math.abs(p2.z - 2.0
-				* cubeSize+0.5*cubeMargin) < EPSILON)
-				|| (Math.abs(p1.z + 2.0 * cubeSize-0.5*cubeMargin) < EPSILON && Math.abs(p2.z
-						+ 2.0 * cubeSize - 0.5*cubeMargin) < EPSILON)) {
+		if (isSwipeOnFrontBack(p1,p2,2.0f)) {
 			handleFrontBackSwipe(p1, p2);
 		}
 		
-		if ((Math.abs(p1.x - 2.0 * cubeSize + 0.5*cubeMargin) < EPSILON && Math.abs(p2.x - 2.0
-				* cubeSize + 0.5*cubeMargin) < EPSILON)
-				|| (Math.abs(p1.x + 2.0 * cubeSize - 0.5*cubeMargin) < EPSILON && Math.abs(p2.x
-						+ 2.0 * cubeSize - 0.5*cubeMargin) < EPSILON)) {
+		if (isSwipeOnLeftRight(p1,p2,2.0f)) {
 			handleLeftRightSwipe(p1, p2);
 		}
 		
-		if ((Math.abs(p1.y - 2.0 * cubeSize + 0.5*cubeMargin) < EPSILON && Math.abs(p2.y - 2.0
-				* cubeSize + 0.5*cubeMargin) < EPSILON)
-				|| (Math.abs(p1.y + 2.0 * cubeSize - 0.5*cubeMargin) < EPSILON && Math.abs(p2.y
-						+ 2.0 * cubeSize - 0.5*cubeMargin) < EPSILON)) {
+		if (isSwipeOnTopBottom(p1,p2,2.0f)) {
 			handleBottomTopSwipe(p1, p2);
 		}	
 	}
@@ -154,21 +87,7 @@ public class Cube4By4 extends CubeGame {
 			if (p1.z < 0)
 				direction *= -1;
 			if (row1 == row2) {
-				switch(row1) {
-				case 0:
-					world.requestTurnFace(FACE_BOTTOM, 90 * direction);
-					break;
-				case 1:
-					world.requestTurnFace(FACE_EQUATOR2, 90 * direction);
-					break;
-				case 2:
-					world.requestTurnFace(FACE_EQUATOR1, 90 * direction);
-					break;
-				case 3:
-					world.requestTurnFace(FACE_TOP, 90 * direction);
-					break;
-				
-				}
+				world.requestTurnFace(PLANE_Y,(row1-1.5f)*cubeSize, 90f * direction);
 			}
 		} else {
 			// check to rotate left , middle or right
@@ -178,21 +97,7 @@ public class Cube4By4 extends CubeGame {
 			if (p1.z < 0)
 				direction *= -1;
 			if (col1 == col2) {
-				switch(col1) {
-				case 0:
-					world.requestTurnFace(FACE_LEFT, 90 * direction);
-					break;
-				case 1:
-					world.requestTurnFace(FACE_MIDDLE2, 90 * direction);
-					break;
-				case 2:
-					world.requestTurnFace(FACE_MIDDLE1, 90 * direction);
-					break;
-				case 3:
-					world.requestTurnFace(FACE_RIGHT, 90 * direction);
-					break;
-				
-				}
+				world.requestTurnFace(PLANE_X,(col1-1.5f)*cubeSize, 90f * direction);
 			}
 		}
 	}
@@ -206,21 +111,7 @@ public class Cube4By4 extends CubeGame {
 			if (p1.x < 0)
 				direction *= -1;
 			if (row1 == row2) {
-				switch(row1) {
-				case 0:
-					world.requestTurnFace(FACE_BOTTOM, 90 * direction);
-					break;
-				case 1:
-					world.requestTurnFace(FACE_EQUATOR2, 90 * direction);
-					break;
-				case 2:
-					world.requestTurnFace(FACE_EQUATOR1, 90 * direction);
-					break;
-				case 3:
-					world.requestTurnFace(FACE_TOP, 90 * direction);
-					break;
-				
-				}
+				world.requestTurnFace(PLANE_Y,(row1-1.5f)*cubeSize, 90f * direction);
 			}
 		} else {
 			// check to rotate front,side or back
@@ -230,21 +121,7 @@ public class Cube4By4 extends CubeGame {
 			if (p1.x > 0)
 				direction *= -1;
 			if (col1 == col2) {
-				switch(col1) {
-				case 0:
-					world.requestTurnFace(FACE_BACK, 90 * direction);
-					break;
-				case 1:
-					world.requestTurnFace(FACE_SIDE2, 90 * direction);
-					break;
-				case 2:
-					world.requestTurnFace(FACE_SIDE1, 90 * direction);
-					break;
-				case 3:
-					world.requestTurnFace(FACE_FRONT, 90 * direction);
-					break;
-				
-				}
+				world.requestTurnFace(PLANE_Z,(col1-1.5f)*cubeSize, 90f * direction);
 			}
 		}
 	}
@@ -258,21 +135,7 @@ public class Cube4By4 extends CubeGame {
 			if (p1.y < 0)
 				direction *= -1;
 			if (col1 == col2) {
-				switch(col1) {
-				case 0:
-					world.requestTurnFace(FACE_LEFT, 90 * direction);
-					break;
-				case 1:
-					world.requestTurnFace(FACE_MIDDLE2, 90 * direction);
-					break;
-				case 2:
-					world.requestTurnFace(FACE_MIDDLE1, 90 * direction);
-					break;
-				case 3:
-					world.requestTurnFace(FACE_RIGHT, 90 * direction);
-					break;
-				
-				}
+				world.requestTurnFace(PLANE_X,(col1-1.5f)*cubeSize, 90f * direction);
 			}
 		} else {
 			// check to rotate front,side or back
@@ -282,21 +145,7 @@ public class Cube4By4 extends CubeGame {
 			if (p1.y > 0)
 				direction *= -1;
 			if (col1 == col2) {
-				switch(col1) {
-				case 0:
-					world.requestTurnFace(FACE_BACK, 90 * direction);
-					break;
-				case 1:
-					world.requestTurnFace(FACE_SIDE2, 90 * direction);
-					break;
-				case 2:
-					world.requestTurnFace(FACE_SIDE1, 90 * direction);
-					break;
-				case 3:
-					world.requestTurnFace(FACE_FRONT, 90 * direction);
-					break;
-				
-				}
+				world.requestTurnFace(PLANE_Z,(col1-1.5f)*cubeSize, 90f * direction);
 			}
 		}
 	}
@@ -308,14 +157,13 @@ public class Cube4By4 extends CubeGame {
 	 * @param count
 	 */
 	
-	private static int FACES[] = {FACE_FRONT,FACE_BACK,FACE_TOP,FACE_BOTTOM,FACE_LEFT,FACE_RIGHT,
-		FACE_MIDDLE1,FACE_MIDDLE2,FACE_EQUATOR1,FACE_EQUATOR2,FACE_SIDE1,FACE_SIDE2};
+
 	@Override
 	public void shuffle(int count) {
 		// TODO: shuffle should only support 6 faces
 		Random r = new Random();
 		for(int i=0;i<count;i++) {
-			world.requestTurnFace(FACES[r.nextInt(6)], 90);
+			world.requestTurnFace(r.nextInt(3),r.nextInt(4)-1.5f, 90);
 		}
 	}
 

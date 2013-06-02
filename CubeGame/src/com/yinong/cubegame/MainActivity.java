@@ -7,7 +7,6 @@ import android.view.Menu;
 import android.view.Window;
 import android.view.WindowManager;
 
-import com.yinong.cubegame.model.Cube3By3;
 import com.yinong.cubegame.model.CubeWorld;
 
 public class MainActivity extends Activity  {

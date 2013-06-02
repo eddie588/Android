@@ -6,7 +6,6 @@ import android.opengl.GLSurfaceView;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 
-import com.yinong.cubegame.model.Cube3By3;
 import com.yinong.cubegame.model.CubeWorld;
 import com.yinong.cubegame.util.Vect3D;
 
@@ -54,9 +53,12 @@ public class GameController implements OnGestureListener,
 			unprocessedY += dy;
 			return false;
 		}
+		if( event2.getY() <gl.getViewportHeight()-200 || event1.getY() < gl.getViewportHeight()-200) {
+			return false;
+		}
 	
 		System.out.println("onScroll");
-		cubeWorld.rotate(-(dx+unprocessedX) / 6f, -(dy+unprocessedY) / 6f);
+		cubeWorld.rotate(-(dx) / 6f, -(dy) );
 		unprocessedX = 0;
 		unprocessedY = 0;	
 		return true;
@@ -68,7 +70,6 @@ public class GameController implements OnGestureListener,
 		System.out.println("OnFling");
 		
 		//	Check intersected cubes along the swipe line		
-		float[] projectionM = gl.getCurrentProjection();
 		int CHECKNUM = 5;
 		float dx = (e2.getX()-e1.getX())/CHECKNUM;
 		float dy = (e2.getY()-e1.getY())/CHECKNUM;
@@ -80,7 +81,7 @@ public class GameController implements OnGestureListener,
 		Vect3D[] hitP = new Vect3D[CHECKNUM];
 		int hitCount=0;
 		for(int i=0;i<CHECKNUM;i++) {
-			Vect3D p = cubeWorld.intersect(gl.getViewportWidth(), gl.getViewportHeight(), x, y, projectionM);
+			Vect3D p = cubeWorld.intersect(gl.getViewportWidth(), gl.getViewportHeight(), x, y);
 
 			if( p != null ) {
 				hitP[hitCount++] = p;
@@ -99,8 +100,9 @@ public class GameController implements OnGestureListener,
 	public void onLongPress(MotionEvent arg0) {
 		// TODO Auto-generated method stub
 		System.out.println("onLongPress");
-		rotateEnabled = true;
 
+		renderer.toggleLight();
+		
 	}
 
 
@@ -119,11 +121,8 @@ public class GameController implements OnGestureListener,
 		if (y < 100) {
 			cubeWorld.shuffle(20);
 		}
-		else if (y > gl.viewportWidth - 100) {
-			renderer.toggleLight();
-		}
 		System.out.println("hit: " + cubeWorld.intersect(gl.getViewportWidth(), 
-				gl.getViewportHeight(),x,y, gl.getCurrentProjection()));
+				gl.getViewportHeight(),x,y));
 		
 		return true;
 	}
