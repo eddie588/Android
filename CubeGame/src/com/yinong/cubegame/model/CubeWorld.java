@@ -10,17 +10,23 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.microedition.khronos.opengles.GL10;
 
+import android.content.Context;
 import android.media.AudioManager;
+import android.media.SoundPool;
 import android.opengl.Matrix;
 
+import com.yinong.cubegame.R;
 import com.yinong.cubegame.util.Ray;
 import com.yinong.cubegame.util.Vect3D;
 
 public class CubeWorld {
 	private static final long PERIOD = 100;
+	private static final Integer CLICKSOUND = null;
 	private AudioManager  mAudioManager;
 	private HashMap<Integer, Integer> mSoundPoolMap;
+	private SoundPool soundPool;
 	private int mStream1 = 0;
+	private boolean enableSound = true;
 	
 	private CubeGame game = null;
 	private Queue<TurnRequest> rotateRequests = new ConcurrentLinkedQueue<TurnRequest>();
@@ -29,13 +35,8 @@ public class CubeWorld {
 	float[] currentRotation = new float[16];
 	private FloatBuffer matrixBuffer;
 	
-	public CubeWorld() {
-//		mSoundPool = new SoundPool(2, AudioManager.STREAM_MUSIC, 0);
-//		mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-//		mSoundPoolMap = new HashMap();
-//		//load fx
-//		mSoundPoolMap.put(SOUND_FX_01, mSoundPool.load(this, R.raw.set_trap, 1));		
-//		game = new Cube3By3(this,0f,0f,-11f);
+	public CubeWorld(Context context) {
+//		game = new Cube3By3(this,0f,0f,-11f);				
 		game = new Cube2By2(this,0f,0f,-8f);
 		
 		Matrix.setIdentityM(accumulatedRotation, 0);
@@ -48,7 +49,17 @@ public class CubeWorld {
 		byteBuf.order(ByteOrder.nativeOrder());
 		matrixBuffer = byteBuf.asFloatBuffer();
 		matrixBuffer.put(accumulatedRotation);
-		matrixBuffer.position(0);		
+		matrixBuffer.position(0);	
+		
+		setupSound(context);
+	}
+	
+	public void setupSound(Context context) {
+		soundPool = new SoundPool(2, AudioManager.STREAM_MUSIC, 0);
+		mAudioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+		mSoundPoolMap = new HashMap();
+		//load fx
+		mSoundPoolMap.put(CLICKSOUND, soundPool.load(context, R.raw.clicksound, 1));		
 	}
 	
 	public synchronized void rotate(float dx, float dy) {
@@ -153,6 +164,17 @@ public class CubeWorld {
 		handleFaceRotateRequests();		
 	}
 	
+	void playClickingSound() {
+		if (!enableSound)
+			return;
+
+		float streamVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+		streamVolume = streamVolume	/ mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+
+		soundPool.play(mSoundPoolMap.get(CLICKSOUND), streamVolume,
+				streamVolume, 1, 0, 1f);
+	}
+	
 	private int currentFace = 0;
 	private float remainingAngle=0;
 	private float ANIMATE_ANGLE = 22.5f;
@@ -163,6 +185,7 @@ public class CubeWorld {
 			
 			remainingAngle = r.angle;
 			currentFace = r.face;
+			playClickingSound();
 		}
 		
 		if( remainingAngle != 0 ) {

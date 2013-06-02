@@ -24,7 +24,9 @@ public class MainActivity extends Activity  {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);	
 		
-		cubeWorld = new CubeWorld();
+		cubeWorld = new CubeWorld(getApplicationContext());
+
+
 		controller = new GameController(cubeWorld);
 		glView = new MainView(getApplicationContext(),controller);
 		GameRenderer renderer = new GameRenderer(glView,cubeWorld);
@@ -32,7 +34,6 @@ public class MainActivity extends Activity  {
 
 		setContentView(glView);
 		controller.setRenderer(renderer);
-	
 
 		glView.setGLWrapper(controller);  
 	}
