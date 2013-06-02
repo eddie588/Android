@@ -2,11 +2,11 @@ package com.yinong.cubegame.model;
 
 import java.util.List;
 
-import javax.microedition.khronos.opengles.GL10;
-
 import com.yinong.cubegame.util.Vect3D;
 
 public interface CubeGame {
+	public static float EPSILON = 0.00001f;
+	
 	public static int FACE_FRONT = 0;
 	public static int FACE_BACK = 1;
 	public static int FACE_SIDE = 2;

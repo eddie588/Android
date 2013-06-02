@@ -35,7 +35,8 @@ public class CubeWorld {
 //		mSoundPoolMap = new HashMap();
 //		//load fx
 //		mSoundPoolMap.put(SOUND_FX_01, mSoundPool.load(this, R.raw.set_trap, 1));		
-		game = new Cube3By3(this,0f,0f,-11f);
+//		game = new Cube3By3(this,0f,0f,-11f);
+		game = new Cube2By2(this,0f,0f,-8f);
 		
 		Matrix.setIdentityM(accumulatedRotation, 0);
 		Matrix.setIdentityM(currentRotation, 0);

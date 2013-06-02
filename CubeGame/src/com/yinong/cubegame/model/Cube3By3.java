@@ -1,18 +1,10 @@
 package com.yinong.cubegame.model;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import javax.microedition.khronos.opengles.GL10;
-
-import android.opengl.Matrix;
-
-import com.yinong.cubegame.util.Ray;
 import com.yinong.cubegame.util.Vect3D;
 
 public class Cube3By3 implements CubeGame {
@@ -24,7 +16,6 @@ public class Cube3By3 implements CubeGame {
 
 	private Vect3D position;
 
-	private static float EPSILON = 0.00001f;
 	private CubeWorld world;
 
 	
@@ -80,19 +71,6 @@ public class Cube3By3 implements CubeGame {
 	@Override
 	public Vect3D getPosition() {
 		return position;
-	}
-
-	public synchronized void draw(GL10 gl,FloatBuffer rotateBuffer) {
-		gl.glMatrixMode(GL10.GL_MODELVIEW);
-
-		gl.glLoadIdentity();
-
-		gl.glTranslatef(position.x, position.y, position.z);
-		gl.glMultMatrixf(rotateBuffer);
-		for (int i = 0; i < 27; i++) {
-			if (cubes[i] != null)
-				cubes[i].draw(gl);
-		}
 	}
 
 	@Override
