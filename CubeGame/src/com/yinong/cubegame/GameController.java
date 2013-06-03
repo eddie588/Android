@@ -5,12 +5,15 @@ import javax.microedition.khronos.opengles.GL;
 import android.opengl.GLSurfaceView;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 
 import com.yinong.cubegame.model.CubeWorld;
 import com.yinong.cubegame.util.Vect3D;
 
 public class GameController implements OnGestureListener,
-		GLSurfaceView.GLWrapper {
+		GLSurfaceView.GLWrapper, OnClickListener {
 	final CubeWorld cubeWorld;
 	MatrixTrackingGL gl;
 	GameRenderer renderer;
@@ -54,7 +57,7 @@ public class GameController implements OnGestureListener,
 			return false;
 		}
 		if( event2.getY() <gl.getViewportHeight()-200 || event1.getY() < gl.getViewportHeight()-200) {
-			return false;
+			return checkTurn(event1, event2);
 		}
 	
 		System.out.println("onScroll");
@@ -68,7 +71,11 @@ public class GameController implements OnGestureListener,
 	public boolean onFling(MotionEvent e1, MotionEvent e2, float vx,
 			float vy) {
 		System.out.println("OnFling");
-		
+
+		return checkTurn(e1,e2);
+	}
+	
+	boolean checkTurn(MotionEvent e1, MotionEvent e2) {
 		//	Check intersected cubes along the swipe line		
 		int CHECKNUM = 5;
 		float dx = (e2.getX()-e1.getX())/CHECKNUM;
@@ -127,13 +134,32 @@ public class GameController implements OnGestureListener,
 		return true;
 	}
 
-	public void getSelection(float touchX, float touchY) {
-
-	}
 
 	@Override
 	public GL wrap(GL gl) {
 		this.gl = new MatrixTrackingGL(gl);
 		return this.gl;
 	}
+	
+
+
+	@Override
+	public void onClick(View view) {
+		
+		switch(view.getId()) {
+			case R.id.btn2X2:
+				cubeWorld.restartGame(CubeWorld.CUBE_2X2X2);
+				break;			
+			case R.id.btn3X3:
+				cubeWorld.restartGame(CubeWorld.CUBE_3X3X3);
+				break;			
+			case R.id.btn4X4:
+				cubeWorld.restartGame(CubeWorld.CUBE_4X4X4);
+				break;			
+			case R.id.btn224:
+				cubeWorld.restartGame(CubeWorld.CUBE_2X2X4);
+				break;			
+		}	
+	}
+	
 }

@@ -1,16 +1,16 @@
 package com.yinong.cubegame;
 
 import android.app.Activity;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 
 import com.yinong.cubegame.model.CubeWorld;
 
 public class MainActivity extends Activity  {
-	GLSurfaceView glView;
+	MainView 		glView;
 	CubeWorld      cubeWorld;
 	GameController controller;
 	@Override
@@ -23,18 +23,35 @@ public class MainActivity extends Activity  {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);	
 		
+		setContentView(R.layout.activity_main);		
+		
 		cubeWorld = new CubeWorld(getApplicationContext());
 
-
+		
 		controller = new GameController(cubeWorld);
-		glView = new MainView(getApplicationContext(),controller);
+		glView = (MainView) findViewById(R.id.mainView);
+		glView.setController(controller);
+	
 		GameRenderer renderer = new GameRenderer(glView,cubeWorld);
 		glView.setRenderer(renderer);
 
-		setContentView(glView);
+	
 		controller.setRenderer(renderer);
-
+		
 		glView.setGLWrapper(controller);  
+		
+		//	Setup button listener
+		ImageView btn = (ImageView)findViewById(R.id.btn2X2);
+		btn.setOnClickListener(controller);
+		
+		btn = (ImageView)findViewById(R.id.btn3X3);
+		btn.setOnClickListener(controller);
+		
+		btn = (ImageView)findViewById(R.id.btn4X4);
+		btn.setOnClickListener(controller);
+		
+		btn = (ImageView)findViewById(R.id.btn224);
+		btn.setOnClickListener(controller);
 	}
 
 	@Override

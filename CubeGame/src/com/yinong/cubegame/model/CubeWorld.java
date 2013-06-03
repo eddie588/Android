@@ -20,7 +20,12 @@ import com.yinong.cubegame.util.Ray;
 import com.yinong.cubegame.util.Vect3D;
 
 public class CubeWorld {
-	private static final long PERIOD = 100;
+	public static final int CUBE_2X2X2 =0;
+	public static final int CUBE_3X3X3 =1;
+	public static final int CUBE_2X2X4 =2;
+	public static final int CUBE_4X4X4 =3;
+	
+	private static final long PERIOD = 60;
 	private static final Integer CLICKSOUND = null;
 	private AudioManager  mAudioManager;
 	private HashMap<Integer, Integer> mSoundPoolMap;
@@ -36,26 +41,21 @@ public class CubeWorld {
 	private FloatBuffer matrixBuffer;
 	
 	long startTime = 0;
+	int moves = 0;
 	
 	public CubeWorld(Context context) {
 		game = new Cube3By3(this,0f,0f,-11f);				
-//		game = new Cube2By2(this,0f,0f,-8f);
-//		game = new Cube4By4(this,0f,0f,-13f);
-//		game = new Cube224(this,0f,0f,-13f);
-		
-		Matrix.setIdentityM(accumulatedRotation, 0);
-		Matrix.setIdentityM(currentRotation, 0);
 
-		Matrix.rotateM(accumulatedRotation,0,45f,1f,1f,1f);
-
-		ByteBuffer byteBuf = ByteBuffer
-				.allocateDirect(accumulatedRotation.length * 4);
+		ByteBuffer byteBuf = ByteBuffer.allocateDirect(accumulatedRotation.length * 4);
 		byteBuf.order(ByteOrder.nativeOrder());
 		matrixBuffer = byteBuf.asFloatBuffer();
-		matrixBuffer.put(accumulatedRotation);
-		matrixBuffer.position(0);	
-		
+
+		restartGame(CUBE_3X3X3);
 		setupSound(context);
+	}
+	
+	public void selectCube(int cube) {
+		restartGame(CUBE_3X3X3);
 	}
 	
 	public void setupSound(Context context) {
@@ -259,5 +259,35 @@ public class CubeWorld {
 
 	public void setProjectionM(float[] currentProjection) {
 		projectionM = currentProjection;
-	}	
+	}
+
+
+	public void restartGame(int cubeType) {
+		switch (cubeType) {
+		case CUBE_2X2X2:
+			game = new Cube2By2(this, 0f, 0f, -8f);
+			break;
+		case CUBE_3X3X3:
+			game = new Cube3By3(this, 0f, 0f, -11f);
+			break;
+		case CUBE_4X4X4:
+			game = new Cube4By4(this, 0f, 0f, -13f);
+			break;
+		case CUBE_2X2X4:
+			game = new Cube224(this, 0f, 0f, -10f);
+			break;
+		}
+		
+		//	reset matrix
+		Matrix.setIdentityM(accumulatedRotation, 0);
+		Matrix.setIdentityM(currentRotation, 0);
+
+		Matrix.rotateM(accumulatedRotation,0,45f,1f,1f,1f);
+
+
+		matrixBuffer.put(accumulatedRotation);
+		matrixBuffer.position(0);	
+		startTime = 0;
+		moves = 0;
+	}
 }
