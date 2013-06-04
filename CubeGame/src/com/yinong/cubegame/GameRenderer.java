@@ -7,8 +7,12 @@ import java.nio.FloatBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLU;
+import android.opengl.GLUtils;
 import android.view.View;
 
 import com.yinong.cubegame.model.CubeWorld;
@@ -18,6 +22,7 @@ public class GameRenderer implements Renderer {
 
 	GameController controller;
 	View view;
+
 	
 	/** Is light enabled ( NEW ) */
 	private boolean light = false;
@@ -77,7 +82,6 @@ public class GameRenderer implements Renderer {
 		gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_POSITION, lightPositionBuffer);	//Position The Light ( NEW )
 		gl.glEnable(GL10.GL_LIGHT0);	
 		gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
-	
 	}
 	
 	@Override
@@ -91,8 +95,8 @@ public class GameRenderer implements Renderer {
 		}        
 		cubeWorld.update();
 		cubeWorld.draw(gl);
+
 	}
-	
 
 
 	@Override
