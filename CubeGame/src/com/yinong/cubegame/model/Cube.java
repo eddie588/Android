@@ -8,15 +8,20 @@ import javax.microedition.khronos.opengles.GL10;
 
 import android.opengl.Matrix;
 
+import com.yinong.cubegame.util.GLColor;
 import com.yinong.cubegame.util.Vect3D;
 
 public class Cube {
-	public static int CUBE_FRONT = 0;
-	public static int CUBE_BACK = 1;
-	public static int CUBE_RIGHT = 2;
-	public static int CUBE_LEFT = 3;
-	public static int CUBE_TOP = 4;
-	public static int CUBE_BOTTOM = 5;
+	public static final int CUBE_FRONT = 0;
+	public static final int CUBE_BACK = 1;
+	public static final int CUBE_RIGHT = 2;
+	public static final int CUBE_LEFT = 3;
+	public static final int CUBE_TOP = 4;
+	public static final int CUBE_BOTTOM = 5;
+	
+	public static final int PLANE_X = 0;
+	public static final int PLANE_Y = 1;
+	public static final int PLANE_Z = 2;	
 
 	private FloatBuffer mVertexBuffer;
 	private FloatBuffer mColorBuffer;
@@ -24,6 +29,8 @@ public class Cube {
 	private ByteBuffer mLineBuffer;
 	private float size;
 	private Vect3D center;
+	
+	private GLColor[] faceColors = new GLColor[6];
 
 	    // all rectangles counter clock wise
 	    private float verticesTemplate[] = {
@@ -198,6 +205,9 @@ public class Cube {
 		    	colors[i+2] = blue;
 		    	colors[i+3] = alpha;	    		
 	    	}
+	    	for(int i=0;i<faceColors.length;i++) {
+	    		faceColors[i] = new GLColor(red,green,blue,alpha);
+	    	}
 	    }
 	    
 	    public void setColor(int face,float red,float green,float blue,float alpha) {
@@ -212,7 +222,8 @@ public class Cube {
 		    	colors[start+i*4+3] = alpha;
 	    	}
             mColorBuffer.put(colors);
-            mColorBuffer.position(0);	    	
+            mColorBuffer.position(0);	 
+            faceColors[face] = new GLColor(red,green,blue,alpha);
 	    }
 	    
 	    
@@ -270,6 +281,15 @@ public class Cube {
 		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
 		gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
 		gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);		
+	}
+	
+	/**
+	 * Assuming angle will always be 90 or -90
+	 * @param angle
+	 * @param plan
+	 */
+	public void updateFaceColors(float angle,int plan) {
+		
 	}
 
 	/**

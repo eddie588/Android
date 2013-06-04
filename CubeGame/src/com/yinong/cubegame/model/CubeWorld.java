@@ -247,13 +247,13 @@ public class CubeWorld {
 
 			for (Cube cube : list) {
 				switch (currentRequest.plane) {
-				case CubeGame.PLANE_Z:
+				case Cube.PLANE_Z:
 					cube.rotate(angle, 0f, 0f, -1f);
 					break;
-				case CubeGame.PLANE_X:
+				case Cube.PLANE_X:
 					cube.rotate(angle, -1f, 0f, 0f);
 					break;
-				case CubeGame.PLANE_Y:
+				case Cube.PLANE_Y:
 					cube.rotate(angle, 0f, -1f, 0f);
 					break;
 				}

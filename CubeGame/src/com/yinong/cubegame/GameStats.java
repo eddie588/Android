@@ -47,6 +47,8 @@ public class GameStats {
 	
 	int[] textures = new int[1];
 	
+	boolean genTextures = true;
+	
 	public void draw(GL10 gl,String time,String moves) {
 		gl.glMatrixMode(GL10.GL_PROJECTION);
 		gl.glPushMatrix();
@@ -90,7 +92,7 @@ public class GameStats {
 	
 	void prepareContent(GL10 gl,String time,String moves) {
 		// Create an empty, mutable bitmap
-		Bitmap bitmap = Bitmap.createBitmap(256,32,Bitmap.Config.ARGB_8888);
+		Bitmap bitmap = Bitmap.createBitmap(512,64,Bitmap.Config.ARGB_8888);
 		// get a canvas to paint over the bitmap
 		Canvas canvas = new Canvas(bitmap);
 		//bitmap.eraseColor(0x4c4c4c);
@@ -103,20 +105,23 @@ public class GameStats {
 		canvas.drawRGB(0x4c, 0x4c, 0x4c);
 		
 		//	prepare for text
-		textPaint.setTextSize(12);
+		textPaint.setTextSize(16);
 		
 		textPaint.setAntiAlias(true);
 		textPaint.setARGB(0xff, 0xff, 0xff, 0xff);
 		textPaint.setStrokeWidth(0);
 		
 		// draw the text centered
-		canvas.drawText("Time: " + time, 10,16, textPaint);
+		canvas.drawText("Time: " + time, 20,32, textPaint);
 					
 		textPaint.measureText("Moves: " + moves);
-		canvas.drawText("Moves: " + moves, (256-10-textPaint.measureText("Moves: " + moves)),16, textPaint);
+		canvas.drawText("Moves: " + moves, (512-20-textPaint.measureText("Moves: " + moves)),32, textPaint);
 		
 		//Generate one texture pointer…
-		gl.glGenTextures(1, textures, 0);
+		if( genTextures ) {
+			gl.glGenTextures(1, textures, 0);
+			genTextures = false;
+		}
 		//…and bind it to our array
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
 		//Create Nearest Filtered Texture

@@ -44,18 +44,18 @@ public class Cube3By3 extends CubeGame {
 	@Override
 	public List<Cube> getCubes(int face) {
 		switch(face) {
-		case FACE_FRONT:
-			return getCubes(PLANE_Z,1f*cubeSize);
-		case FACE_BACK:
-			return getCubes(PLANE_Z,-1f*cubeSize);
-		case FACE_LEFT:
-			return getCubes(PLANE_X,-1f*cubeSize);
-		case FACE_RIGHT:
-			return getCubes(PLANE_X,1f*cubeSize);
-		case FACE_TOP:
-			return getCubes(PLANE_Y,1f*cubeSize);
-		case FACE_BOTTOM:
-			return getCubes(PLANE_Y,-1f*cubeSize);
+		case Cube.CUBE_FRONT:
+			return getCubes(Cube.PLANE_Z,1f*cubeSize);
+		case Cube.CUBE_BACK:
+			return getCubes(Cube.PLANE_Z,-1f*cubeSize);
+		case Cube.CUBE_LEFT:
+			return getCubes(Cube.PLANE_X,-1f*cubeSize);
+		case Cube.CUBE_RIGHT:
+			return getCubes(Cube.PLANE_X,1f*cubeSize);
+		case Cube.CUBE_TOP:
+			return getCubes(Cube.PLANE_Y,1f*cubeSize);
+		case Cube.CUBE_BOTTOM:
+			return getCubes(Cube.PLANE_Y,-1f*cubeSize);
 		}
 		return new ArrayList<Cube>();
 	}
@@ -86,7 +86,7 @@ public class Cube3By3 extends CubeGame {
 			if (p1.z < 0)
 				direction *= -1;
 			if (row1 == row2) {
-				world.requestTurnFace(PLANE_Y,(row1-1f)*cubeSize, 90f * direction);
+				world.requestTurnFace(Cube.PLANE_Y,(row1-1f)*cubeSize, 90f * direction);
 			}
 		} else {
 			// check to rotate left , middle or right
@@ -96,7 +96,7 @@ public class Cube3By3 extends CubeGame {
 			if (p1.z < 0)
 				direction *= -1;
 			if (col1 == col2) {
-				world.requestTurnFace(PLANE_X,(col1-1f)*cubeSize, 90f * direction);
+				world.requestTurnFace(Cube.PLANE_X,(col1-1f)*cubeSize, 90f * direction);
 			}
 		}
 	}
@@ -110,7 +110,7 @@ public class Cube3By3 extends CubeGame {
 			if (p1.x < 0)
 				direction *= -1;
 			if (row1 == row2) {
-				world.requestTurnFace(PLANE_Y,(row1-1f)*cubeSize, 90f * direction);
+				world.requestTurnFace(Cube.PLANE_Y,(row1-1f)*cubeSize, 90f * direction);
 			}
 		} else {
 			// check to rotate front,side or back
@@ -120,7 +120,7 @@ public class Cube3By3 extends CubeGame {
 			if (p1.x > 0)
 				direction *= -1;
 			if (col1 == col2) {
-				world.requestTurnFace(PLANE_Z,(col1-1f)*cubeSize, 90f * direction);
+				world.requestTurnFace(Cube.PLANE_Z,(col1-1f)*cubeSize, 90f * direction);
 			}
 		}
 	}
@@ -134,7 +134,7 @@ public class Cube3By3 extends CubeGame {
 			if (p1.y < 0)
 				direction *= -1;
 			if (col1 == col2) {
-				world.requestTurnFace(PLANE_X,(col1-1f)*cubeSize, 90f * direction);
+				world.requestTurnFace(Cube.PLANE_X,(col1-1f)*cubeSize, 90f * direction);
 			}
 		} else {
 			// check to rotate front,side or back
@@ -144,7 +144,7 @@ public class Cube3By3 extends CubeGame {
 			if (p1.y > 0)
 				direction *= -1;
 			if (col1 == col2) {
-				world.requestTurnFace(PLANE_Z,(col1-1f)*cubeSize, 90f * direction);
+				world.requestTurnFace(Cube.PLANE_Z,(col1-1f)*cubeSize, 90f * direction);
 			}
 		}
 	}

@@ -56,9 +56,9 @@ public class GameController implements OnGestureListener,
 			unprocessedY += dy;
 			return false;
 		}
-		if( event2.getY() <gl.getViewportHeight()-200 || event1.getY() < gl.getViewportHeight()-200) {
-			return checkTurn(event1, event2);
-		}
+//		if( event2.getY() <gl.getViewportHeight()-200 || event1.getY() < gl.getViewportHeight()-200) {
+//			return checkTurn(event1, event2);
+//		}
 	
 		System.out.println("onScroll");
 		cubeWorld.rotate(-(dx) / 6f, -(dy) );
