@@ -62,22 +62,23 @@ public class Cube3By3 extends CubeGame {
 	
 
 	@Override
-	public void turnFace(Vect3D p1, Vect3D p2) {
+	public boolean turnFace(Vect3D p1, Vect3D p2) {
 		// Swipe on front face
 		if (isSwipeOnFrontBack(p1,p2,1.5f)) {
-			handleFrontBackSwipe(p1, p2);
+			return handleFrontBackSwipe(p1, p2);
 		}
 		
 		if (isSwipeOnLeftRight(p1,p2,1.5f)) {
-			handleLeftRightSwipe(p1, p2);
+			return handleLeftRightSwipe(p1, p2);
 		}
 		
-		if (isSwipeOnTopBottom(p1,p2,1.5f)) {
-			handleBottomTopSwipe(p1, p2);
+		if ( isSwipeOnTopBottom(p1,p2,1.5f)) {
+			return handleBottomTopSwipe(p1, p2);
 		}		
+		return false;
 	}
 
-	private void handleFrontBackSwipe(Vect3D p1, Vect3D p2) {
+	private boolean handleFrontBackSwipe(Vect3D p1, Vect3D p2) {
 		if (Math.abs(p1.x - p2.x) > (Math.abs(p1.y - p2.y))) {
 			// check to rotate top, equator or bottom
 			int row1 = (int) (p1.y / cubeSize + 1.5);
@@ -87,6 +88,7 @@ public class Cube3By3 extends CubeGame {
 				direction *= -1;
 			if (row1 == row2) {
 				world.requestTurnFace(Cube.PLANE_Y,(row1-1f)*cubeSize, 90f * direction);
+				return true;
 			}
 		} else {
 			// check to rotate left , middle or right
@@ -97,11 +99,13 @@ public class Cube3By3 extends CubeGame {
 				direction *= -1;
 			if (col1 == col2) {
 				world.requestTurnFace(Cube.PLANE_X,(col1-1f)*cubeSize, 90f * direction);
+				return true;
 			}
 		}
+		return false;
 	}
 	
-	private void handleLeftRightSwipe(Vect3D p1, Vect3D p2) {
+	private boolean handleLeftRightSwipe(Vect3D p1, Vect3D p2) {
 		if (Math.abs(p1.z - p2.z) > (Math.abs(p1.y - p2.y))) {
 			// check to rotate top, equator or bottom
 			int row1 = (int) (p1.y / cubeSize + 1.5);
@@ -111,6 +115,7 @@ public class Cube3By3 extends CubeGame {
 				direction *= -1;
 			if (row1 == row2) {
 				world.requestTurnFace(Cube.PLANE_Y,(row1-1f)*cubeSize, 90f * direction);
+				return true;
 			}
 		} else {
 			// check to rotate front,side or back
@@ -121,11 +126,13 @@ public class Cube3By3 extends CubeGame {
 				direction *= -1;
 			if (col1 == col2) {
 				world.requestTurnFace(Cube.PLANE_Z,(col1-1f)*cubeSize, 90f * direction);
+				return true;
 			}
 		}
+		return false;
 	}
 	
-	private void handleBottomTopSwipe(Vect3D p1, Vect3D p2) {
+	private boolean handleBottomTopSwipe(Vect3D p1, Vect3D p2) {
 		if (Math.abs(p1.z - p2.z) > (Math.abs(p1.x - p2.x))) {
 			// check to rotate left, middle or right
 			int col1 = (int) (p1.x / cubeSize + 1.5);
@@ -135,6 +142,7 @@ public class Cube3By3 extends CubeGame {
 				direction *= -1;
 			if (col1 == col2) {
 				world.requestTurnFace(Cube.PLANE_X,(col1-1f)*cubeSize, 90f * direction);
+				return true;
 			}
 		} else {
 			// check to rotate front,side or back
@@ -145,8 +153,10 @@ public class Cube3By3 extends CubeGame {
 				direction *= -1;
 			if (col1 == col2) {
 				world.requestTurnFace(Cube.PLANE_Z,(col1-1f)*cubeSize, 90f * direction);
+				return true;
 			}
 		}
+		return false;
 	}
 
 

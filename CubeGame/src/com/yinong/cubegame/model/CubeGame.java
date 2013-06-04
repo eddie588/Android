@@ -26,7 +26,7 @@ public abstract class CubeGame {
 	protected float cubeMargin = 0.05f;
 	
 	
-	public abstract void turnFace(Vect3D p1, Vect3D p2);
+	public abstract boolean turnFace(Vect3D p1, Vect3D p2);
 
 	public abstract List<Cube> getCubes(int face);
 

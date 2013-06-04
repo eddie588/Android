@@ -156,8 +156,10 @@ public class CubeWorld {
 		if (startTime == 0) {
 			startTime = System.currentTimeMillis();
 		}
-		moves++;
-		game.turnFace(p1, p2);
+
+		if( game.turnFace(p1, p2) ) {
+			moves++;
+		}
 	}
 
 	public long getTime() {
@@ -320,6 +322,10 @@ public class CubeWorld {
 		matrixBuffer.position(0);
 		startTime = 0;
 		moves = 0;
+	}
+	
+	public void addMove() {
+		moves++;
 	}
 
 	public int getMoves() {
