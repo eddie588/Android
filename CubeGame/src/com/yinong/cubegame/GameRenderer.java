@@ -33,7 +33,7 @@ public class GameRenderer implements Renderer {
 	 */
 	private float[] lightAmbient = {0.5f, 0.5f, 0.5f, 1.0f};
 	private float[] lightDiffuse = {1.0f, 1.0f, 1.0f, 1.0f};
-	private float[] lightPosition = {0.0f, 0.0f, 2.0f, 1.0f};
+	private float[] lightPosition = {0.0f, 2.0f, 1.0f, 1.0f};
 		
 	/* The buffers for our light values ( NEW ) */
 	private FloatBuffer lightAmbientBuffer;
@@ -77,6 +77,7 @@ public class GameRenderer implements Renderer {
 		gl.glEnable(GL10.GL_DEPTH_TEST);
 		gl.glDepthFunc(GL10.GL_LEQUAL);
 		gl.glShadeModel(GL10.GL_SMOOTH);
+		gl.glEnable(GL10.GL_COLOR_MATERIAL);
 		gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_AMBIENT, lightAmbientBuffer);		//Setup The Ambient Light ( NEW )
 		gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_DIFFUSE, lightDiffuseBuffer);		//Setup The Diffuse Light ( NEW )
 		gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_POSITION, lightPositionBuffer);	//Position The Light ( NEW )
@@ -115,6 +116,6 @@ public class GameRenderer implements Renderer {
 	}
 	
 	public void toggleLight() {
-		light = light?false:true;
+		//light = light?false:true;
 	}
 }

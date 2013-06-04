@@ -18,7 +18,6 @@ public class GameController implements OnGestureListener,
 	MatrixTrackingGL gl;
 	GameRenderer renderer;
 
-
 	public GameController(CubeWorld cubeWorld) {
 		this.cubeWorld = cubeWorld;
 

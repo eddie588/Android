@@ -182,6 +182,7 @@ public class CubeWorld {
 	public void requestTurnFace(int plane, float centerP, float angle) {
 		rotateRequests.add(new TurnRequest(plane, centerP, angle));
 	}
+	
 
 	public void shuffle(int count) {
 		game.shuffle(count);
@@ -218,9 +219,19 @@ public class CubeWorld {
 	void handleFaceRotateRequests() {
 		if (remainingAngle == 0 && !rotateRequests.isEmpty()) {
 			TurnRequest r = rotateRequests.remove();
-
+			if( !game.isValidTurn(r.plane, r.centerP, r.angle)) {
+				return;
+			}
 			remainingAngle = r.angle;
 			currentRequest = r;
+			try {
+				Thread.sleep(100);
+			}
+			catch(Exception e)
+			{
+				
+			}
+
 			playClickingSound();
 		}
 
@@ -228,6 +239,8 @@ public class CubeWorld {
 			// keep rotating current layer
 			List<Cube> list = game.getCubes(currentRequest.plane,
 					currentRequest.centerP);
+			
+			list.addAll(game.getStickyCubes(currentRequest.plane, currentRequest.centerP));
 
 			float angle;
 

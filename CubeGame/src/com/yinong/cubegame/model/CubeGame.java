@@ -83,6 +83,10 @@ public abstract class CubeGame {
 		return cubes;
 	}
 	
+	public List<Cube> getStickyCubes(int plane,float centerP) {
+		return new ArrayList<Cube>();
+	}
+	
 	public boolean isValidTurn(int plane,float centerP,float angle) {
 		return true;
 	}

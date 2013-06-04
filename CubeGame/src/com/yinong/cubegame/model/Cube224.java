@@ -110,6 +110,7 @@ public class Cube224 extends CubeGame {
 		return false;
 	}
 	
+	
 	private boolean handleLeftRightSwipe(Vect3D p1, Vect3D p2) {
 		if (Math.abs(p1.z - p2.z) > (Math.abs(p1.y - p2.y))) {
 			// check to rotate top, equator or bottom
@@ -119,7 +120,7 @@ public class Cube224 extends CubeGame {
 			if (p1.x < 0)
 				direction *= -1;
 			if (row1 == row2 && isValidTurn(Cube.PLANE_Y,(row1-1.5f)*cubeSize, 90f * direction)) {
-				world.requestTurnFace(Cube.PLANE_Y,(row1-1.5f)*cubeSize, 90f * direction);
+				world.requestTurnFace(Cube.PLANE_Y,(row1-1.5f)*cubeSize, 90f * direction);			
 				return true;
 			}
 		} else {
@@ -130,7 +131,7 @@ public class Cube224 extends CubeGame {
 			if (p1.x > 0)
 				direction *= -1;
 			if (col1 == col2 && isValidTurn(Cube.PLANE_Z,(col1-1.5f)*cubeSize, 90f * direction)) {
-				world.requestTurnFace(Cube.PLANE_Z,(col1-1.5f)*cubeSize, 90f * direction);
+				world.requestTurnFace(Cube.PLANE_Z,(col1-1.5f)*cubeSize, 90f * direction);	
 				return true;
 			}
 		}
@@ -146,7 +147,7 @@ public class Cube224 extends CubeGame {
 			if (p1.y < 0)
 				direction *= -1;
 			if (col1 == col2 && isValidTurn(Cube.PLANE_X,(col1-1.5f)*cubeSize, 90f * direction)) {
-				world.requestTurnFace(Cube.PLANE_X,(col1-1.5f)*cubeSize, 90f * direction);
+				world.requestTurnFace(Cube.PLANE_X,(col1-1.5f)*cubeSize, 90f * direction);			
 				return true;
 			}
 		} else {
@@ -157,7 +158,7 @@ public class Cube224 extends CubeGame {
 			if (p1.y > 0)
 				direction *= -1;
 			if (col1 == col2 && isValidTurn(Cube.PLANE_Z,(col1-1.5f)*cubeSize, 90f * direction) ) {
-				world.requestTurnFace(Cube.PLANE_Z,(col1-1.5f)*cubeSize, 90f * direction);
+				world.requestTurnFace(Cube.PLANE_Z,(col1-1.5f)*cubeSize, 90f * direction);			
 				return true;
 			}
 		}
@@ -181,12 +182,26 @@ public class Cube224 extends CubeGame {
 		for(int i=0;i<count;i++) {
 			int plane = r.nextInt(3);
 			float centerP = r.nextInt(4)-1.5f;
-			if( !isValidTurn(plane,centerP,90) ) {
-				i--;
-				continue;
-			}
+//			if( !isValidTurn(plane,centerP,90) ) {
+//				i--;
+//				continue;
+//			}
 			world.requestTurnFace(r.nextInt(3),r.nextInt(4)-1.5f, 90);
 		}
+	}
+	
+	public List<Cube> getStickyCubes(int plane,float centerP) {
+		List<Cube> list = new ArrayList<Cube>();
+		List<Cube> neighbour = getCubes(plane,centerP+cubeSize);
+		
+		if( neighbour.size() <4 )
+			list.addAll(neighbour);
+		
+		neighbour = getCubes(plane,centerP-cubeSize);
+		
+		if( neighbour.size() <4 )
+			list.addAll(neighbour);		
+		return list;
 	}
 
 	@Override
