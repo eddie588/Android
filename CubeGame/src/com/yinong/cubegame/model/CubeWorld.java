@@ -89,9 +89,9 @@ public class CubeWorld {
 		matrixBuffer.position(0);
 	}
 
-	public Vect3D intersect(int width, int height, float x, float y) {
+	public IntersectCube intersect(int width, int height, float x, float y) {
 
-		int cloestIndex = -1;
+		int closestIndex = -1;
 
 		float[] tempM = new float[16];
 		float[] modelM = new float[16];
@@ -103,24 +103,26 @@ public class CubeWorld {
 
 		Vect3D hit = null;
 		Vect3D hitP = null;
+		Cube hitCube = null;
 
 		int i = 0;
 		for (Cube cube : game.getAllCubes()) {
 			Vect3D ret = intersectCube(ray, cube.getTriangles());
 			if (ret != null) {
 				if (hit == null || ret.x < hit.x) {
-					cloestIndex = i;
+					closestIndex = i;
 					hit = ret;
 					hitP = ray.getIntersectCoord(ret);
+					hitCube = cube;
 				}
 			}
 		}
 
 		if (hit != null) {
 			System.out.println("closes hit: " + hitP);
-			System.out.println("index: " + cloestIndex);
+			System.out.println("index: " + closestIndex);
 
-			return hitP;
+			return new IntersectCube(hitP,hitCube);
 		} else {
 			System.out.println("missed");
 		}
@@ -152,14 +154,113 @@ public class CubeWorld {
 		return hit;
 	}
 
-	public void turnFace(Vect3D p1, Vect3D p2) {
+	public boolean checkTurn(float x1,float y1,float x2,float y2,int viewPortWidth,int viewPortHeight) {
+		int CHECKNUM = 5;
+		float dx = (x2-x1)/CHECKNUM;
+		float dy = (y2-y1)/CHECKNUM;
+		
+		//	Get first and last hit
+		IntersectCube[] hitP = new IntersectCube[CHECKNUM];
+		int hitCount=0;
+		for(int i=0;i<CHECKNUM;i++) {
+			IntersectCube c = intersect(viewPortWidth, viewPortHeight, x1, y1);
+
+			if( c != null ) {
+				hitP[hitCount++] = c;
+			}
+			x1 += dx;
+			y1 += dy;
+		}
+		if( hitCount < 2)
+			return false;
+		
+		return turnFace(hitP,hitCount);
+	}
+
+	
+	public boolean turnFace(IntersectCube[] hitC,int hitCount) {
 		if (startTime == 0) {
 			startTime = System.currentTimeMillis();
 		}
-
-		if( game.turnFace(p1, p2) ) {
-			moves++;
+		
+		float ax=0,ay=0,az=0;
+		for(int i=0;i<hitCount-1;i++) {
+			ax += Math.abs(hitC[i].hitP.x - hitC[i+1].hitP.x);
+			ay += Math.abs(hitC[i].hitP.y - hitC[i+1].hitP.y);
+			az += Math.abs(hitC[i].hitP.z - hitC[i+1].hitP.z);
 		}
+		ax = ax/hitCount;
+		ay = ay/hitCount;
+		az = az/hitCount;
+		int direction;
+		
+		Vect3D P0 = hitC[0].hitP;
+		Vect3D P1 = hitC[hitCount-1].hitP;
+		
+		Cube hitCube = hitC[0].hitCube;
+		
+		if( ax <CubeGame.EPSILON && ax < ay && ax < az ) {
+			// Swipe on X face
+			if(Math.abs(P0.y-P1.y) > Math.abs(P0.z-P1.z)) {
+				direction = (hitCube.getHitFace(P0.x,0,0) == Cube.CUBE_LEFT )?-1:1;
+				direction *= ((P0.y-P1.y)>0)? 1:-1;
+				
+				requestTurnFace(Cube.PLANE_Z, hitCube.getCenter().z, 90*direction);
+				moves++;
+				return true;
+			}
+			else {
+				direction = (hitCube.getHitFace(P0.x,0,0) == Cube.CUBE_LEFT )?-1:1;
+				direction *= ((P0.z-P1.z)<0) ? 1:-1;
+				
+				requestTurnFace(Cube.PLANE_Y, hitCube.getCenter().y, 90*direction);
+				moves++;
+				return true;
+			}
+		}
+		if( ay <CubeGame.EPSILON && ay < ax && ay < az ) {
+			// Swipe on Y face
+			if(Math.abs(P0.x-P1.x) > Math.abs(P0.z-P1.z)) {
+				direction = (hitCube.getHitFace(0,P0.y,0) == Cube.CUBE_TOP )?1:-1;
+				direction *= ((P0.x-P1.x)>0)? -1:1;
+				
+				requestTurnFace(Cube.PLANE_Z, hitCube.getCenter().z, 90*direction);
+				moves++;
+				return true;
+				
+			}
+			else {
+				direction = (hitCube.getHitFace(0,P0.y,0) == Cube.CUBE_TOP )?1:-1;
+				direction *= ((P0.z-P1.z)<0) ? -1:1;
+				
+				requestTurnFace(Cube.PLANE_X, hitCube.getCenter().x, 90*direction);
+				moves++;
+				return true;
+			}
+		}
+		if( az <CubeGame.EPSILON && az < ay && az < ax ) {
+			// Swipe on Z face
+			if(Math.abs(P0.x-P1.x) > Math.abs(P0.y-P1.y)) {
+
+				direction = (hitCube.getHitFace(0,0,P0.z) == Cube.CUBE_FRONT )?1:-1;
+				direction *= ((P0.x-P1.x)>0)? 1:-1;
+				
+				requestTurnFace(Cube.PLANE_Y, hitCube.getCenter().y, 90*direction);
+				moves++;
+				return true;
+				
+			}
+			else {
+
+				direction = (hitCube.getHitFace(0,0,P0.z) == Cube.CUBE_FRONT )?1:-1;
+				direction *= ((P0.y-P1.y)<0) ? 1:-1;
+				
+				requestTurnFace(Cube.PLANE_X, hitCube.getCenter().x, 90*direction);
+				moves++;
+				return true;
+			}
+		}		
+		return false;
 	}
 
 	public long getTime() {
@@ -348,5 +449,16 @@ public class CubeWorld {
 	
 	public CubeGame getGame() {
 		return game;
+	}
+	
+	
+	//	Class for holding the intersected cube info
+	class IntersectCube {
+		Vect3D hitP;
+		Cube hitCube;
+		public IntersectCube(Vect3D hitP,Cube hitCube) {
+			this.hitP = hitP;
+			this.hitCube = hitCube;
+		}
 	}
 }

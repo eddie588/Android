@@ -27,9 +27,6 @@ public abstract class CubeGame {
 	protected Vect3D cubeOrigin = new Vect3D(0,0,0);
 	
 	
-	public boolean turnFace(Vect3D p1, Vect3D p2) {
-		return false;
-	}
 
 	public abstract List<Cube> getCubes(int face);
 

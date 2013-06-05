@@ -356,4 +356,23 @@ public class Cube {
 		}
 		return triangle;
 	}
+	
+	int getHitFace(float x,float y,float z) {
+		if( x != 0 &&  Math.abs(x- (getCenter().x+ getSize()/2)) < CubeGame.EPSILON )
+			return Cube.CUBE_RIGHT;
+		else if( x != 0 && Math.abs(x- (getCenter().x- getSize()/2)) < CubeGame.EPSILON  )
+			return Cube.CUBE_LEFT;
+		
+		if( y != 0 &&  Math.abs(y- (getCenter().y - getSize()/2)) < CubeGame.EPSILON )
+			return Cube.CUBE_BOTTOM;
+		else if( y != 0 && Math.abs(y- (getCenter().y+ getSize()/2)) < CubeGame.EPSILON  )
+			return Cube.CUBE_TOP;
+		
+		if( z != 0 &&  Math.abs(z- (getCenter().z - getSize()/2)) < CubeGame.EPSILON )
+			return Cube.CUBE_BACK;
+		else if( z != 0 && Math.abs(z- (getCenter().z + getSize()/2)) < CubeGame.EPSILON  )
+			return Cube.CUBE_FRONT;		
+			
+		return -1;
+	}	
 }
