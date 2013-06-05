@@ -17,19 +17,19 @@
 
 
         <ImageButton
-            android:id="@+id/btn2X2"
+            android:id="@+id/btn222"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/twobytwo" />
         
         <ImageButton
-            android:id="@+id/btn3X3"
+            android:id="@+id/btn333"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/threebythree" />
         
         <ImageButton
-            android:id="@+id/btn4X4"
+            android:id="@+id/btn444"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/fourbyfour" />
@@ -39,6 +39,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/twobytwobyfour" />
+
+        <ImageButton
+            android:id="@+id/btn233"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/cube233" />
+
+        <ImageButton
+            android:id="@+id/btn555"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/cube555" />
 
     </LinearLayout>
    

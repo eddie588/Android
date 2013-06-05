@@ -76,15 +76,15 @@ public abstract class CubeGame {
 		for(Cube cube:getAllCubes()) {
 			switch(plane) {
 			case Cube.PLANE_X:
-				if( Math.abs(cube.getCenter().x-centerP) < EPSILON + cubeSize/2 )
+				if( Math.abs(cube.getCenter().x-centerP) < EPSILON )
 					cubes.add(cube);
 				break;
 			case Cube.PLANE_Y:
-				if( Math.abs(cube.getCenter().y-centerP) < EPSILON + cubeSize/2)
+				if( Math.abs(cube.getCenter().y-centerP) < EPSILON)
 					cubes.add(cube);
 				break;
 			case Cube.PLANE_Z:
-				if( Math.abs(cube.getCenter().z-centerP) < EPSILON + cubeSize/2)
+				if( Math.abs(cube.getCenter().z-centerP) < EPSILON )
 					cubes.add(cube);
 				break;			
 			}

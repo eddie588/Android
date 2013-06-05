@@ -26,6 +26,8 @@ public class CubeWorld {
 	public static final int CUBE_3X3X3 = 1;
 	public static final int CUBE_2X2X4 = 2;
 	public static final int CUBE_4X4X4 = 3;
+	public static final int CUBE_5X5X5 = 4;
+	public static final int CUBE_2X3X3 = 5;
 
 	private static final long PERIOD = 60;
 	private static final Integer CLICKSOUND = null;
@@ -413,8 +415,7 @@ public class CubeWorld {
 	public void restartGame(int cubeType) {
 		switch (cubeType) {
 		case CUBE_2X2X2:
-			//game = new Cube2By2(this, 0f, 0f, -8f);
-			game = new Cube233(this, 0f, 0f, -14f);
+			game = new Cube2By2(this, 0f, 0f, -8f);
 			break;
 		case CUBE_3X3X3:
 			game = new Cube3By3(this, 0f, 0f, -11f);
@@ -424,6 +425,12 @@ public class CubeWorld {
 			break;
 		case CUBE_2X2X4:
 			game = new Cube224(this, 0f, 0f, -10f);
+			break;
+		case CUBE_2X3X3:
+			game = new Cube233(this, 0f, 0f, -9f);
+			break;
+		case CUBE_5X5X5:
+			game = new Cube5By5(this, 0f, 0f, -14f);
 			break;
 		}
 

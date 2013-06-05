@@ -63,7 +63,14 @@ public class GameController implements OnGestureListener,
 //		}
 	
 		System.out.println("onScroll");
-		cubeWorld.rotate(-(dx) / 6f, -(dy) );
+		if( cubeWorld.intersect(gl.getViewportWidth(), gl.getViewportHeight(), 
+				event1.getX(), event1.getY()) != null ||
+			cubeWorld.intersect(gl.getViewportWidth(), gl.getViewportHeight(), 
+						event2.getX(), event2.getY()) != null				
+				) {
+			return false;
+		}
+		cubeWorld.rotate(-(dx) , -(dy) );
 		unprocessedX = 0;
 		unprocessedY = 0;	
 		return true;
@@ -126,18 +133,24 @@ public class GameController implements OnGestureListener,
 	public void onClick(View view) {
 		
 		switch(view.getId()) {
-			case R.id.btn2X2:
+			case R.id.btn222:
 				cubeWorld.restartGame(CubeWorld.CUBE_2X2X2);
 				break;			
-			case R.id.btn3X3:
+			case R.id.btn333:
 				cubeWorld.restartGame(CubeWorld.CUBE_3X3X3);
 				break;			
-			case R.id.btn4X4:
+			case R.id.btn444:
 				cubeWorld.restartGame(CubeWorld.CUBE_4X4X4);
 				break;			
 			case R.id.btn224:
 				cubeWorld.restartGame(CubeWorld.CUBE_2X2X4);
-				break;			
+				break;		
+			case R.id.btn233:
+				cubeWorld.restartGame(CubeWorld.CUBE_2X3X3);
+				break;	
+			case R.id.btn555:
+				cubeWorld.restartGame(CubeWorld.CUBE_5X5X5);
+				break;					
 		}	
 	}
 	
