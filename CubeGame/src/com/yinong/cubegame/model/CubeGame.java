@@ -24,9 +24,12 @@ public abstract class CubeGame {
 	
 	protected float cubeSize = 1f;
 	protected float cubeMargin = 0.05f;
+	protected Vect3D cubeOrigin = new Vect3D(0,0,0);
 	
 	
-	public abstract boolean turnFace(Vect3D p1, Vect3D p2);
+	public boolean turnFace(Vect3D p1, Vect3D p2) {
+		return false;
+	}
 
 	public abstract List<Cube> getCubes(int face);
 
@@ -35,7 +38,16 @@ public abstract class CubeGame {
 	public abstract List<Cube> getAllCubes();
 
 	public abstract Vect3D getPosition();
+
 	
+	public Vect3D getCubeOrigin() {
+		return cubeOrigin;
+	}
+
+	public void setCubeOrigin(Vect3D cubeOrigin) {
+		this.cubeOrigin = cubeOrigin;
+	}
+
 	protected void setupColors() {
 		for(Cube cube:getCubes(Cube.CUBE_FRONT)) {
 			cube.setColor(Cube.CUBE_FRONT,0.75f,0f,0f,1f); // RED
@@ -67,21 +79,22 @@ public abstract class CubeGame {
 		for(Cube cube:getAllCubes()) {
 			switch(plane) {
 			case Cube.PLANE_X:
-				if( Math.abs(cube.getCenter().x-centerP) < EPSILON )
+				if( Math.abs(cube.getCenter().x-centerP) < EPSILON + cubeSize/2 )
 					cubes.add(cube);
 				break;
 			case Cube.PLANE_Y:
-				if( Math.abs(cube.getCenter().y-centerP) < EPSILON )
+				if( Math.abs(cube.getCenter().y-centerP) < EPSILON + cubeSize/2)
 					cubes.add(cube);
 				break;
 			case Cube.PLANE_Z:
-				if( Math.abs(cube.getCenter().z-centerP) < EPSILON )
+				if( Math.abs(cube.getCenter().z-centerP) < EPSILON + cubeSize/2)
 					cubes.add(cube);
 				break;			
 			}
 		}
 		return cubes;
 	}
+	
 	
 	public List<Cube> getStickyCubes(int plane,float centerP) {
 		return new ArrayList<Cube>();

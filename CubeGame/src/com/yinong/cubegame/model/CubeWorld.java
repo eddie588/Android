@@ -224,13 +224,13 @@ public class CubeWorld {
 			}
 			remainingAngle = r.angle;
 			currentRequest = r;
-			try {
-				Thread.sleep(100);
-			}
-			catch(Exception e)
-			{
-				
-			}
+//			try {
+//				Thread.sleep(100);
+//			}
+//			catch(Exception e)
+//			{
+//				
+//			}
 
 			playClickingSound();
 		}
@@ -312,7 +312,8 @@ public class CubeWorld {
 	public void restartGame(int cubeType) {
 		switch (cubeType) {
 		case CUBE_2X2X2:
-			game = new Cube2By2(this, 0f, 0f, -8f);
+			//game = new Cube2By2(this, 0f, 0f, -8f);
+			game = new Cube233(this, 0f, 0f, -14f);
 			break;
 		case CUBE_3X3X3:
 			game = new Cube3By3(this, 0f, 0f, -11f);
@@ -343,5 +344,9 @@ public class CubeWorld {
 
 	public int getMoves() {
 		return moves;
+	}
+	
+	public CubeGame getGame() {
+		return game;
 	}
 }
