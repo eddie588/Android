@@ -71,7 +71,7 @@ public class GameRenderer implements Renderer {
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		System.out.println("Surfave view created.");
 		//gl.glClearColor(0.6f, 0.850980392f, 0.917647059f, 0.5f);
-		gl.glClearColor(0.3f,0.3f,0.3f, 0.5f);
+		gl.glClearColor(0f,0f,0.2f, 0.5f);
 
 		gl.glClearDepthf(1.0f);
 		gl.glEnable(GL10.GL_DEPTH_TEST);

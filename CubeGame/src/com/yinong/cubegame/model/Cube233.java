@@ -41,24 +41,6 @@ public class Cube233 extends CubeGame {
 		return position;
 	}
 
-	@Override
-	public List<Cube> getCubes(int face) {
-		switch(face) {
-		case Cube.CUBE_FRONT:
-			return getCubes(Cube.PLANE_Z,1f*cubeSize);
-		case Cube.CUBE_BACK:
-			return getCubes(Cube.PLANE_Z,-1f*cubeSize);
-		case Cube.CUBE_LEFT:
-			return getCubes(Cube.PLANE_X,-1f*cubeSize);
-		case Cube.CUBE_RIGHT:
-			return getCubes(Cube.PLANE_X,1f*cubeSize);
-		case Cube.CUBE_TOP:
-			return getCubes(Cube.PLANE_Y,0.5f*cubeSize);
-		case Cube.CUBE_BOTTOM:
-			return getCubes(Cube.PLANE_Y,-0.5f*cubeSize);
-		}
-		return new ArrayList<Cube>();
-	}
 
 	/**
 	 * Randomly rotate face for the specified number of times. This simply add the rotate request 
@@ -71,8 +53,12 @@ public class Cube233 extends CubeGame {
 	public void shuffle(int count) {
 		// TODO: shuffle should only support 6 faces
 		Random r = new Random();
-		for(int i=0;i<count;i++) {
-			world.requestTurnFace(r.nextInt(3),r.nextInt(4)-1.5f, 90);
+		for(int i=0;i<2*count;i++) {
+			int plane = r.nextInt(3);
+			if( plane == Cube.PLANE_Y )
+				world.requestTurnFace(plane,r.nextInt(2)-0.5f, 90);
+			else
+				world.requestTurnFace(plane,r.nextInt(2)-1f, 90);				
 		}
 	}
 

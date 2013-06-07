@@ -45,25 +45,6 @@ public class Cube224 extends CubeGame {
 		return position;
 	}
 
-	@Override
-	public List<Cube> getCubes(int face) {
-		switch(face) {
-		case Cube.CUBE_FRONT:
-			return getCubes(Cube.PLANE_Z,0.5f*cubeSize);
-		case Cube.CUBE_BACK:
-			return getCubes(Cube.PLANE_Z,-0.5f*cubeSize);
-		case Cube.CUBE_LEFT:
-			return getCubes(Cube.PLANE_X,-1.5f*cubeSize);
-		case Cube.CUBE_RIGHT:
-			return getCubes(Cube.PLANE_X,1.5f*cubeSize);
-		case Cube.CUBE_TOP:
-			return getCubes(Cube.PLANE_Y,0.5f*cubeSize);
-		case Cube.CUBE_BOTTOM:
-			return getCubes(Cube.PLANE_Y,-0.5f*cubeSize);
-		}
-		return new ArrayList<Cube>();
-	}
-	
 	
 	public boolean isValidTurn(int plane,float centerP,float angle) {
 		return getCubes(plane,centerP).size() >=4;

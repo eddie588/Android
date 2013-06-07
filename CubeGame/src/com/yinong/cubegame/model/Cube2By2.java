@@ -80,5 +80,5 @@ public class Cube2By2 extends CubeGame {
 	@Override
 	public List<Cube> getAllCubes() {
 		return Arrays.asList(cubes);
-	};
+	}
 }

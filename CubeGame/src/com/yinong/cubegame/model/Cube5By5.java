@@ -72,7 +72,7 @@ public class Cube5By5 extends CubeGame {
 		// TODO: shuffle should only support 6 faces
 		Random r = new Random();
 		for(int i=0;i<count;i++) {
-			world.requestTurnFace(r.nextInt(3),r.nextInt(4)-1.5f, 90);
+			world.requestTurnFace(r.nextInt(3),r.nextInt(5)-2f, 90);
 		}
 	}
 

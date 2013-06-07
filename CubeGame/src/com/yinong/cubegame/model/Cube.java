@@ -30,7 +30,7 @@ public class Cube {
 	private float size;
 	private Vect3D center;
 	
-	private GLColor[] faceColors = new GLColor[6];
+	private int[] faceColors = new int[6];
 
 	    // all rectangles counter clock wise
 	    private float verticesTemplate[] = {
@@ -206,7 +206,7 @@ public class Cube {
 		    	colors[i+3] = alpha;	    		
 	    	}
 	    	for(int i=0;i<faceColors.length;i++) {
-	    		faceColors[i] = new GLColor(red,green,blue,alpha);
+	    		faceColors[i] = -1;
 	    	}
 	    }
 	    
@@ -223,7 +223,7 @@ public class Cube {
 	    	}
             mColorBuffer.put(colors);
             mColorBuffer.position(0);	 
-            faceColors[face] = new GLColor(red,green,blue,alpha);
+            faceColors[face] = face;
 	    }
 	    
 	    
@@ -283,13 +283,59 @@ public class Cube {
 		gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);		
 	}
 	
+	public int getFaceColor(int face) {
+		return faceColors[face];
+	}
+	
 	/**
 	 * Assuming angle will always be 90 or -90
 	 * @param angle
 	 * @param plan
 	 */
-	public void updateFaceColors(float angle,int plan) {
-		
+	public void turnFaceColors(int plane,float angle) {
+		int tmp;
+		if( plane == PLANE_X && angle == -90 ) {
+			tmp = faceColors[CUBE_TOP];
+			faceColors[CUBE_TOP] = faceColors[CUBE_BACK];
+			faceColors[CUBE_BACK] = faceColors[CUBE_BOTTOM];
+			faceColors[CUBE_BOTTOM] = faceColors[CUBE_FRONT];
+			faceColors[CUBE_FRONT] = tmp;
+		}
+		if( plane == PLANE_X && angle == 90 ) {
+			tmp = faceColors[CUBE_TOP];
+			faceColors[CUBE_TOP] = faceColors[CUBE_FRONT];
+			faceColors[CUBE_FRONT] = faceColors[CUBE_BOTTOM];
+			faceColors[CUBE_BOTTOM] = faceColors[CUBE_BACK];
+			faceColors[CUBE_BACK] = tmp;
+		}	
+		if( plane == PLANE_Y && angle == 90 ) {
+			tmp = faceColors[CUBE_LEFT];
+			faceColors[CUBE_LEFT] = faceColors[CUBE_FRONT];
+			faceColors[CUBE_FRONT] = faceColors[CUBE_RIGHT];
+			faceColors[CUBE_RIGHT] = faceColors[CUBE_BACK];
+			faceColors[CUBE_BACK] = tmp;
+		}
+		if( plane == PLANE_Y && angle == -90 ) {
+			tmp = faceColors[CUBE_LEFT];
+			faceColors[CUBE_LEFT] = faceColors[CUBE_BACK];
+			faceColors[CUBE_BACK] = faceColors[CUBE_RIGHT];
+			faceColors[CUBE_RIGHT] = faceColors[CUBE_FRONT];
+			faceColors[CUBE_FRONT] = tmp;
+		}
+		if( plane == PLANE_Z && angle == 90 ) {
+			tmp = faceColors[CUBE_TOP];
+			faceColors[CUBE_TOP] = faceColors[CUBE_LEFT];
+			faceColors[CUBE_LEFT] = faceColors[CUBE_BOTTOM];
+			faceColors[CUBE_BOTTOM] = faceColors[CUBE_RIGHT];
+			faceColors[CUBE_RIGHT] = tmp;
+		}
+		if( plane == PLANE_Z && angle == -90 ) {
+			tmp = faceColors[CUBE_TOP];
+			faceColors[CUBE_TOP] = faceColors[CUBE_RIGHT];
+			faceColors[CUBE_RIGHT] = faceColors[CUBE_BOTTOM];
+			faceColors[CUBE_BOTTOM] = faceColors[CUBE_LEFT];
+			faceColors[CUBE_LEFT] = tmp;
+		}		
 	}
 
 	/**

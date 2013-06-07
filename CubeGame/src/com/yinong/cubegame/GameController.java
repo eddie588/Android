@@ -70,7 +70,7 @@ public class GameController implements OnGestureListener,
 				) {
 			return false;
 		}
-		cubeWorld.rotate(-(dx) , -(dy) );
+		cubeWorld.rotate(-(dx)/4 , -(dy)/4 );
 		unprocessedX = 0;
 		unprocessedY = 0;	
 		return true;

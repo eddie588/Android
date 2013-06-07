@@ -6,14 +6,14 @@ import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.opengles.GL10;
 
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Paint.Style;
-import android.graphics.Rect;
 import android.opengl.GLUtils;
 
-public class GameStats {
+public class ImageBox {
 	private FloatBuffer vertexBuffer;	// buffer holding the vertices
 	private FloatBuffer textureBuffer;	// buffer holding the vertices
 	
@@ -31,7 +31,27 @@ public class GameStats {
 			1.0f, 0f		// bottom right	(V3)
 	};	
 	
-	public GameStats() {
+	Bitmap bitmap;
+	
+	public ImageBox(float x,float y,float z,float width,float height,Bitmap bitmap) {
+		this.bitmap = bitmap;
+		//	setup vertices
+		vertices[0] = x-width/2;   // bottom left
+		vertices[1] = y-height/2;
+		vertices[2] = z;
+		
+		vertices[3] = x-width/2;   // top left
+		vertices[4] = y+height/2;
+		vertices[5] = z;
+		
+		vertices[6] = x+width/2;   // bottom right
+		vertices[7] = y-height/2;
+		vertices[8] = z;
+
+		vertices[9] = x+width/2;   // top right
+		vertices[10] = y+height/2;
+		vertices[11] = z;
+		
 		ByteBuffer byteBuffer = ByteBuffer.allocateDirect(vertices.length * 4); 
 		byteBuffer.order(ByteOrder.nativeOrder());
 		vertexBuffer = byteBuffer.asFloatBuffer();
@@ -49,28 +69,25 @@ public class GameStats {
 	
 	boolean genTextures = true;
 	
-	public void draw(GL10 gl,String time,String moves) {
+	public void draw(GL10 gl) {
+		
 		gl.glMatrixMode(GL10.GL_PROJECTION);
-		gl.glPushMatrix();
-		gl.glOrthof(-1f, 1f, -1f, 1f, 1.0f, -1.0f);
-		gl.glLoadIdentity();
-		
+		loadBitmap(gl);
+
 		gl.glMatrixMode(GL10.GL_MODELVIEW);
-		gl.glPushMatrix();
 		gl.glLoadIdentity();
-		
+
 		// bind the previously generated texture
-		prepareContent(gl,time,moves);
 		gl.glEnable(GL10.GL_TEXTURE_2D);
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
 		
 		// Point to our buffers
 		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 		gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+	
 		
 		// Set the face rotation
-		gl.glFrontFace(GL10.GL_CW);
-		
+		gl.glFrontFace(GL10.GL_CW);		
 		// Point to our vertex buffer
 		gl.glVertexPointer(3, GL10.GL_FLOAT, 0, vertexBuffer);
 		gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, textureBuffer);
@@ -82,47 +99,19 @@ public class GameStats {
 		//Disable the client state before leaving
 		gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
 		gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);	
-		gl.glDisable(GL10.GL_TEXTURE_2D);			
+		gl.glDisable(GL10.GL_TEXTURE_2D);		
 		
-		gl.glMatrixMode(GL10.GL_PROJECTION);
-		gl.glPopMatrix();
 		gl.glMatrixMode(GL10.GL_MODELVIEW);		
-		gl.glPopMatrix();		
 	}
 
 	
-	void prepareContent(GL10 gl,String time,String moves) {
-		// Create an empty, mutable bitmap
-		Bitmap bitmap = Bitmap.createBitmap(512,64,Bitmap.Config.ARGB_8888);
-		// get a canvas to paint over the bitmap
-		Canvas canvas = new Canvas(bitmap);
-		//bitmap.eraseColor(0x4c4c4c);
-		// get a background image from resources
-		// note the image format must match the bitmap format
+	public void loadBitmap(GL10 gl) {
+		if( ! genTextures)
+			return;	
 
-		// Draw the text
-		Paint textPaint = new Paint();
-		
-		canvas.drawRGB(0,0, (int)(255*0.2));
-		
-		//	prepare for text
-		textPaint.setTextSize(16);
-		
-		textPaint.setAntiAlias(true);
-		textPaint.setARGB(0xff, 0xff, 0xff, 0xff);
-		textPaint.setStrokeWidth(0);
-		
-		// draw the text centered
-		canvas.drawText("Time: " + time, 20,32, textPaint);
-					
-		textPaint.measureText("Moves: " + moves);
-		canvas.drawText("Moves: " + moves, (512-20-textPaint.measureText("Moves: " + moves)),32, textPaint);
-		
 		//Generate one texture pointer…
-		if( genTextures ) {
-			gl.glGenTextures(1, textures, 0);
-			genTextures = false;
-		}
+		gl.glGenTextures(1, textures, 0);
+		genTextures = false;
 		//…and bind it to our array
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
 		//Create Nearest Filtered Texture

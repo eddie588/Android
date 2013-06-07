@@ -1,22 +1,25 @@
 package com.yinong.cubegame.model;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.text.NumberFormat;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.opengl.Matrix;
 
 import com.yinong.cubegame.GameStats;
+import com.yinong.cubegame.ImageBox;
 import com.yinong.cubegame.R;
 import com.yinong.cubegame.util.Ray;
 import com.yinong.cubegame.util.Vect3D;
@@ -44,10 +47,14 @@ public class CubeWorld {
 	float[] projectionM = null;
 	private FloatBuffer matrixBuffer;
 	private GameStats stats = new GameStats();
+	
+	private ImageBox solvedImage;
 
 	long startTime = 0;
 	int moves = 0;
-
+	long elapsedTime = 0;
+	boolean solved = false;
+	
 	public CubeWorld(Context context) {
 		game = new Cube3By3(this, 0f, 0f, -11f);
 
@@ -58,6 +65,22 @@ public class CubeWorld {
 
 		restartGame(CUBE_3X3X3);
 		setupSound(context);
+		
+		InputStream is = context.getResources().openRawResource(R.drawable.solved);
+		Bitmap bitmap = null;
+		try {
+			//BitmapFactory is an Android graphics utility for images
+			bitmap = BitmapFactory.decodeStream(is);
+
+		} finally {
+			//Always clear and close
+			try {
+				is.close();
+				is = null;
+			} catch (IOException e) {
+			}
+		}
+		solvedImage = new ImageBox(0f,0f,-1f,0.3f,0.3f,bitmap);
 	}
 
 	public void selectCube(int cube) {
@@ -165,7 +188,10 @@ public class CubeWorld {
 		IntersectCube[] hitP = new IntersectCube[CHECKNUM];
 		int hitCount=0;
 		for(int i=0;i<CHECKNUM;i++) {
+			long before = System.currentTimeMillis();
 			IntersectCube c = intersect(viewPortWidth, viewPortHeight, x1, y1);
+			
+//			System.out.println("Intersect time: " + (System.currentTimeMillis()-before) + "ms");
 
 			if( c != null ) {
 				hitP[hitCount++] = c;
@@ -175,14 +201,17 @@ public class CubeWorld {
 		}
 		if( hitCount < 2)
 			return false;
-		
-		return turnFace(hitP,hitCount);
+		long before = System.currentTimeMillis();
+		boolean turned = turnFace(hitP,hitCount);
+		System.out.println("turnFace: " + (System.currentTimeMillis()-before) + "ms");
+		return turned;
 	}
 
 	
 	public boolean turnFace(IntersectCube[] hitC,int hitCount) {
 		if (startTime == 0) {
 			startTime = System.currentTimeMillis();
+			solved = false;
 		}
 		
 		float ax=0,ay=0,az=0;
@@ -266,9 +295,7 @@ public class CubeWorld {
 	}
 
 	public long getTime() {
-		if (startTime == 0)
-			return 0;
-		return System.currentTimeMillis() - startTime;
+		return elapsedTime;
 	}
 
 	public String getTimeStr() {
@@ -289,16 +316,23 @@ public class CubeWorld {
 
 	public void shuffle(int count) {
 		game.shuffle(count);
+		startTime = 0;
+		moves = 0;
+		elapsedTime = 0;
+		solved = false;
 	}
 
 	long lastUpdate = 0;
 
-	public void update() {
+	public void update() {			
 		long now = System.currentTimeMillis();
 		if (now - lastUpdate < PERIOD) {
 			return;
 		}
 		lastUpdate = now;
+		if( startTime !=0 && !solved ) {
+			elapsedTime = now - startTime;
+		}
 		handleFaceRotateRequests();
 	}
 
@@ -334,16 +368,16 @@ public class CubeWorld {
 //			{
 //				
 //			}
-
+			
+			//	Before actual turn, update the internal color state
+			game.updateColors(r.plane,r.centerP,r.angle);
 			playClickingSound();
 		}
+		
+
 
 		if (remainingAngle != 0) {
 			// keep rotating current layer
-			List<Cube> list = game.getCubes(currentRequest.plane,
-					currentRequest.centerP);
-			
-			list.addAll(game.getStickyCubes(currentRequest.plane, currentRequest.centerP));
 
 			float angle;
 
@@ -363,18 +397,15 @@ public class CubeWorld {
 					remainingAngle = 0;
 			}
 
-			for (Cube cube : list) {
-				switch (currentRequest.plane) {
-				case Cube.PLANE_Z:
-					cube.rotate(angle, 0f, 0f, -1f);
-					break;
-				case Cube.PLANE_X:
-					cube.rotate(angle, -1f, 0f, 0f);
-					break;
-				case Cube.PLANE_Y:
-					cube.rotate(angle, 0f, -1f, 0f);
-					break;
-				}
+			game.turnLayer(currentRequest.plane,currentRequest.centerP,angle);
+			if ( remainingAngle == 0 ) {
+				// layer turn complete.
+				//game.printColors();
+				if( !solved && game.isSolved()) {
+					solved = true;
+					// TODO Play sound
+					System.out.println("Solved");
+				}				
 			}
 			return;
 		}
@@ -382,6 +413,7 @@ public class CubeWorld {
 
 	public synchronized void draw(GL10 gl) {
 		gl.glMatrixMode(GL10.GL_MODELVIEW);
+		gl.glPushMatrix();
 
 		gl.glLoadIdentity();
 
@@ -394,6 +426,11 @@ public class CubeWorld {
 
 		// draw stats
 		stats.draw(gl, getTimeStr(), String.valueOf(getMoves()));
+		
+		gl.glMatrixMode(GL10.GL_MODELVIEW);
+		gl.glPopMatrix();		
+//		if( solved )
+//			solvedImage.draw(gl);
 	}
 
 	class TurnRequest {
@@ -444,6 +481,8 @@ public class CubeWorld {
 		matrixBuffer.position(0);
 		startTime = 0;
 		moves = 0;
+		elapsedTime = 0;
+		solved = false;
 	}
 	
 	public void addMove() {

@@ -89,10 +89,10 @@ public class Ray {
 		near.y = nearCoOrds[1];
 		near.z = nearCoOrds[2];
 
-		System.out.println("Near:" + nearCoOrds[0] + "," + nearCoOrds[1] + ","
-				+ nearCoOrds[2]);
-		System.out.println("Far:" + farCoOrds[0] + "," + farCoOrds[1] + ","
-				+ farCoOrds[2]);
+//		System.out.println("Near:" + nearCoOrds[0] + "," + nearCoOrds[1] + ","
+//				+ nearCoOrds[2]);
+//		System.out.println("Far:" + farCoOrds[0] + "," + farCoOrds[1] + ","
+//				+ farCoOrds[2]);
 		
 		calculationDirection();
 	}
