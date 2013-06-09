@@ -326,10 +326,10 @@ public class CubeWorld {
 
 	public void update() {			
 		long now = System.currentTimeMillis();
-		if (now - lastUpdate < PERIOD) {
-			return;
-		}
-		lastUpdate = now;
+//		if (now - lastUpdate < PERIOD) {
+//			return;
+//		}
+//		lastUpdate = now;
 		if( startTime !=0 && !solved ) {
 			elapsedTime = now - startTime;
 		}
@@ -351,7 +351,7 @@ public class CubeWorld {
 
 	private TurnRequest currentRequest = null;
 	private float remainingAngle = 0;
-	private float ANIMATE_ANGLE = 22.5f;
+	private float ANIMATE_ANGLE = 10f;
 
 	void handleFaceRotateRequests() {
 		if (remainingAngle == 0 && !rotateRequests.isEmpty()) {
