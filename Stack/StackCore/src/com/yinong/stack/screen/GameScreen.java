@@ -9,12 +9,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL10;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.input.GestureDetector;
+import com.badlogic.gdx.input.GestureDetector.GestureAdapter;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
@@ -22,6 +21,7 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.EdgeShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.yinong.stack.control.Assets;
+import com.yinong.stack.control.CameraHelper;
 import com.yinong.stack.model.StackObject;
 
 public class GameScreen implements Screen {
@@ -33,18 +33,46 @@ public class GameScreen implements Screen {
 	Game game;
 	SpriteBatch batch;
 	Camera camera;
-	World world = new World(new Vector2(0, -100), true); 	
+	World world = new World(new Vector2(0, -1000), true); 	
 	Box2DDebugRenderer 	debugRenderer;	
-    ShapeRenderer shapeRenderer ;
 	int screenWidth;
 	int screenHeight;
 	
+	StackObject activeObject=null;
+	
 	List<StackObject> boxes = new ArrayList<StackObject>();
+	
+	GestureDetector gestureDetector;
+	
+	int push = -1;
 	
 	public GameScreen(Game game) {
 		this.game = game;
 		batch = new SpriteBatch();
-
+	
+		gestureDetector = new GestureDetector(new GestureAdapter() {
+			@Override
+			public boolean tap(float x, float y, int count, int button) {
+				if( x < screenWidth/2 ) {
+					push = StackObject.PUSH_LEFT;
+				}
+				else  {
+					push = StackObject.PUSH_RIGHT;
+				}
+				return true;
+			}
+			
+			@Override
+			public boolean touchDown(float x, float y, int pointer, int button) {
+				// TODO Auto-generated method stub
+				return super.touchDown(x, y, pointer, button);
+			}
+			
+			
+		});
+		
+		Gdx.input.setInputProcessor(gestureDetector);
+		debugRenderer = new Box2DDebugRenderer();
 	}
 
 	@Override
@@ -53,63 +81,39 @@ public class GameScreen implements Screen {
 		update(delta);
 
         world.step(BOX_STEP, BOX_VELOCITY_ITERATIONS, BOX_POSITION_ITERATIONS);
-        //debugRenderer.render(world, camera.combined);  
+        debugRenderer.render(world, camera.combined);  
         
         batch.begin();
         for(StackObject box:boxes) {
-        	box.draw(batch,box.getWidth(),box.getHeight());
+        	box.draw(batch);
         }
-        
-        
         batch.end();
-        
-
-//        for(Box box:boxes) {
-//        	box.draw(shapeRenderer);
-//        }        
-
-        //testDraw();
 	}
-	
-	int angle=0;
-	int p = 0;
-	void testDraw() {
-		
-		shapeRenderer.begin(ShapeType.Line);
-		Matrix4 m = new Matrix4();
-		m.idt();
-		m.translate(100,camera.viewportHeight-p,0);
-		m.rotate(0, 0, 1, angle);
-		
-		shapeRenderer.setTransformMatrix(m);
-		shapeRenderer.line(-5, camera.viewportHeight-5, 5,camera.viewportHeight+5);
-		shapeRenderer.line(-5, camera.viewportHeight+5, 5,camera.viewportHeight-5);
-		shapeRenderer.end();
-		
-		angle += 1;
-		p--;
-		if( p <0 ) 
-			p = (int)camera.viewportHeight;
-	}
-	
 	
 	float time = 0;	
 	int count=0;
 	void update(float delta) {
-		Random r = new Random();
+		time += delta;
 		
-		if( delta < 1/2f)
-			time += delta;
-		
-		if( time > 1 ) { 
-			int size = r.nextInt(5)+5;
-			boxes.add(new StackObject(world,(float)size,(float)size,
-					BodyType.DynamicBody,3,0.01f,
-					camera.viewportWidth/2,camera.viewportHeight,0,Assets.brick));
-//			System.out.println("new box" + (count++));
-	        
-	        time = 0;
+		if( push == StackObject.PUSH_LEFT)
+			activeObject.push(StackObject.PUSH_LEFT);
+		if( push == StackObject.PUSH_RIGHT)
+			activeObject.push(StackObject.PUSH_RIGHT);
+		if( !activeObject.isMoving() ) {
+			createStackObject();
+			time = 0;
 		}
+	}
+	
+	void createStackObject() {
+		Random r = new Random();
+		int size = (r.nextInt(5)+5)*5;
+		StackObject  obj = new StackObject(world,(float)size,(float)size,
+				BodyType.DynamicBody,3,0.01f,
+				r.nextInt(500) + 50,camera.viewportHeight,0,Assets.brick);
+		boxes.add(obj);
+		activeObject = obj;
+//		System.out.println("new box" + (count++));     
 	}
 	
 
@@ -122,30 +126,47 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void show() {
-        camera = new OrthographicCamera();  
-        camera.viewportHeight = 320;  
-        camera.viewportWidth = 480;  
+        camera = CameraHelper.GetCamera(600, 1000);
         camera.position.set(camera.viewportWidth * .5f, camera.viewportHeight * .5f, 0f);
         camera.update();  
         
+		batch.setProjectionMatrix(camera.combined);
+      //  debugRenderer = new Box2DDebugRenderer();  
+                
+        //	Create walls
+        createWalls();
+        
+        createStackObject();
+        
+	}
+	
+	void createWalls() {
         //Ground body  
         BodyDef groundBodyDef =new BodyDef();  
-        groundBodyDef.position.set(new Vector2(0, 10));  
+        groundBodyDef.position.set(new Vector2(0, 0));  
         Body groundBody = world.createBody(groundBodyDef);  
-        EdgeShape groundBox = new EdgeShape();  
-        groundBox.set(0, 0,camera.viewportWidth,0);
-        groundBody.createFixture(groundBox, 0.0f);  
-        
-		batch.setProjectionMatrix(camera.combined);
-        debugRenderer = new Box2DDebugRenderer();  
-        
-        shapeRenderer  = new ShapeRenderer();
-        shapeRenderer.setProjectionMatrix(camera.combined);
-        
-//		boxes.add(new Box(world,10,10,
-//				BodyType.DynamicBody,1,0.5f,
-//				camera.viewportWidth/2,camera.viewportHeight,0,Assets.brick));
-        
+        EdgeShape groundBox1 = new EdgeShape();  
+        groundBox1.set(0, 0,camera.viewportWidth,0);
+        groundBody.createFixture(groundBox1, 0.0f);  
+
+        //left wall body  
+        groundBodyDef =new BodyDef();  
+        groundBodyDef.position.set(new Vector2(0, 0));  
+        groundBody = world.createBody(groundBodyDef);  
+        EdgeShape groundBox2 = new EdgeShape();  
+        groundBox2.set(0, 0,0,camera.viewportHeight);
+        groundBody.createFixture(groundBox2, 0.0f);  
+
+        //right wall body  
+        Vector3 vec = new Vector3(screenWidth,screenHeight,0);
+        System.out.println("Screen X edge: " + vec.x);
+        camera.unproject(vec);
+        groundBodyDef =new BodyDef();  
+        groundBodyDef.position.set(new Vector2(0, 0));  
+        groundBody = world.createBody(groundBodyDef);  
+        EdgeShape groundBox3 = new EdgeShape();  
+        groundBox3.set(600, 0,600,800);
+        groundBody.createFixture(groundBox3, 0.0f);  
 	}
 
 	@Override
@@ -167,8 +188,6 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void dispose() {
-		// TODO Auto-generated method stub
-		
+		batch.dispose();
 	}
-
 }

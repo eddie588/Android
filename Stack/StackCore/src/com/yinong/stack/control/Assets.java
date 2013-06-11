@@ -1,29 +1,28 @@
 package com.yinong.stack.control;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class Assets {
 	static TextureAtlas atlas;
 	
-	public static Texture brick;
+	public static TextureRegion brick;
 
 	
 	public static void Load()
 	{
-		brick = new Texture(Gdx.files.internal("brick.jpg"));
 
 //		LoadFont();
-		//LoadTextures();
+		LoadTextures();
 		
 	}
 
-//	private static void LoadTextures() {
-//		// TODO Auto-generated method stub
-//		dropletRegion=atlas.findRegion("droplet");
-//	}
+	private static void LoadTextures() {
+		// TODO Auto-generated method stub
+		atlas = new TextureAtlas(Gdx.files.internal("texture/texture.txt"));
+		brick=atlas.findRegion("brick");
+	}
 	
 
 	public static void Dispose()
