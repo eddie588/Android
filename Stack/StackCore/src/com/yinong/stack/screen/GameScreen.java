@@ -81,7 +81,7 @@ public class GameScreen implements Screen {
 		update(delta);
 
         world.step(BOX_STEP, BOX_VELOCITY_ITERATIONS, BOX_POSITION_ITERATIONS);
-        debugRenderer.render(world, camera.combined);  
+        //debugRenderer.render(world, camera.combined);  
         
         batch.begin();
         for(StackObject box:boxes) {
