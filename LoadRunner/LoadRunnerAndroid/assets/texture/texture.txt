@@ -1,0 +1,117 @@
+
+texture.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+brick
+  rotate: false
+  xy: 431, 24
+  size: 21, 21
+  orig: 21, 21
+  offset: 0, 0
+  index: -1
+concrete
+  rotate: false
+  xy: 454, 24
+  size: 21, 21
+  orig: 21, 21
+  offset: 0, 0
+  index: -1
+gold
+  rotate: false
+  xy: 477, 24
+  size: 21, 21
+  orig: 21, 21
+  offset: 0, 0
+  index: -1
+ladder
+  rotate: false
+  xy: 431, 1
+  size: 21, 21
+  orig: 21, 21
+  offset: 0, 0
+  index: -1
+man_l
+  rotate: false
+  xy: 454, 1
+  size: 21, 21
+  orig: 21, 21
+  offset: 0, 0
+  index: -1
+rope
+  rotate: false
+  xy: 477, 1
+  size: 21, 21
+  orig: 21, 21
+  offset: 0, 0
+  index: -1
+run1
+  rotate: false
+  xy: 1, 4
+  size: 41, 41
+  orig: 41, 41
+  offset: 0, 0
+  index: -1
+run2
+  rotate: false
+  xy: 44, 4
+  size: 41, 41
+  orig: 41, 41
+  offset: 0, 0
+  index: -1
+run3
+  rotate: false
+  xy: 87, 4
+  size: 41, 41
+  orig: 41, 41
+  offset: 0, 0
+  index: -1
+run4
+  rotate: false
+  xy: 130, 4
+  size: 41, 41
+  orig: 41, 41
+  offset: 0, 0
+  index: -1
+run5
+  rotate: false
+  xy: 173, 4
+  size: 41, 41
+  orig: 41, 41
+  offset: 0, 0
+  index: -1
+run6
+  rotate: false
+  xy: 216, 4
+  size: 41, 41
+  orig: 41, 41
+  offset: 0, 0
+  index: -1
+run7
+  rotate: false
+  xy: 259, 4
+  size: 41, 41
+  orig: 41, 41
+  offset: 0, 0
+  index: -1
+run8
+  rotate: false
+  xy: 302, 4
+  size: 41, 41
+  orig: 41, 41
+  offset: 0, 0
+  index: -1
+run9
+  rotate: false
+  xy: 345, 4
+  size: 41, 41
+  orig: 41, 41
+  offset: 0, 0
+  index: -1
+stand
+  rotate: false
+  xy: 388, 4
+  size: 41, 41
+  orig: 41, 41
+  offset: 0, 0
+  index: -1

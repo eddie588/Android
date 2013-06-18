@@ -33,7 +33,7 @@ public class GameScreen implements Screen {
 	Game game;
 	SpriteBatch batch;
 	Camera camera;
-	World world = new World(new Vector2(0, -1000), true); 	
+	World world = new World(new Vector2(0, -100f), true); 	
 	Box2DDebugRenderer 	debugRenderer;	
 	int screenWidth;
 	int screenHeight;
@@ -81,13 +81,13 @@ public class GameScreen implements Screen {
 		update(delta);
 
         world.step(BOX_STEP, BOX_VELOCITY_ITERATIONS, BOX_POSITION_ITERATIONS);
-        //debugRenderer.render(world, camera.combined);  
+        debugRenderer.render(world, camera.combined);  
         
-        batch.begin();
-        for(StackObject box:boxes) {
-        	box.draw(batch);
-        }
-        batch.end();
+//        batch.begin();
+//        for(StackObject box:boxes) {
+//        	box.draw(batch);
+//        }
+//        batch.end();
 	}
 	
 	float time = 0;	
@@ -109,7 +109,7 @@ public class GameScreen implements Screen {
 		Random r = new Random();
 		int size = (r.nextInt(5)+5)*5;
 		StackObject  obj = new StackObject(world,(float)size,(float)size,
-				BodyType.DynamicBody,3,0.01f,
+				BodyType.DynamicBody,0.1f,0.01f,
 				r.nextInt(500) + 50,camera.viewportHeight,0,Assets.brick);
 		boxes.add(obj);
 		activeObject = obj;
